@@ -131,6 +131,28 @@ def inicializar_banco():
     cursor = conn.cursor()
 
     cursor.execute('''
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT UNIQUE,
+        senha TEXT,
+        setor TEXT,
+        funcao TEXT,
+        foto TEXT,
+        bio TEXT,
+        status TEXT DEFAULT 'ativo'
+    )
+''')
+    
+    cursor.execute("SELECT * FROM usuarios WHERE nome = ?", ("admin",))
+    if not cursor.fetchone():
+        cursor.execute("""
+            INSERT INTO usuarios (nome, senha, setor, funcao)
+            VALUES (?, ?, ?, ?)
+        """, ("admin", "123", "suporte", "dev"))
+
+    
+
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS caixas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             regiao TEXT,
