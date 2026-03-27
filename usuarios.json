@@ -1,0 +1,468 @@
+[
+  {
+    "id": "raul_suporte",
+    "nome": "Raul",
+    "senha": "123",
+    "setor": "suporte",
+    "funcao": "dev",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "felipe_suporte",
+    "nome": "Felipe",
+    "senha": "Hung0v3r7@",
+    "setor": "Suporte",
+    "funcao": "dev",
+    "foto": "Felipe.png",
+    "bio": "Aguardando a foto do Jader",
+    "status": "💬 Online"
+  },
+  {
+    "id": "sac_sac",
+    "nome": "sac",
+    "senha": "sac001",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "qualidade_qualidade",
+    "nome": "qualidade",
+    "senha": "quali001",
+    "setor": "Qualidade",
+    "funcao": null,
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "cobranca_cobranca",
+    "nome": "cobranca",
+    "senha": "cobra001",
+    "setor": "Cobranca",
+    "funcao": null,
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "cs_cs",
+    "nome": "CS",
+    "senha": "cs001",
+    "setor": "CS",
+    "funcao": null,
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "jader_suporte",
+    "nome": "Jader",
+    "senha": "jader@2004",
+    "setor": "suporte",
+    "funcao": "dev",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "murilo_suporte",
+    "nome": "Murilo",
+    "senha": "Hung0v3r7@",
+    "setor": "suporte",
+    "funcao": "N1",
+    "foto": "murilo_suporte.jfif",
+    "bio": "",
+    "status": "💬 Online"
+  },
+  {
+    "id": "marceloramos_suporte",
+    "nome": "Marcelo Ramos",
+    "senha": "123",
+    "setor": "suporte",
+    "funcao": "N1",
+    "foto": "Marcelo_Ramos.jpg",
+    "bio": "",
+    "status": "💬 Online"
+  },
+  {
+    "id": "bruno_suporte",
+    "nome": "Bruno",
+    "senha": "123",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "jediael_tec",
+    "nome": "Jediael",
+    "senha": "123",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": "arthur_suporte.jpg",
+    "bio": "",
+    "status": "💬 Online"
+  },
+  {
+    "id": "mayke_suporte",
+    "nome": "Mayke",
+    "senha": "123",
+    "setor": "Suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": "Maykão do Suporte.\r\nCliente em CTO por favor agendar.",
+    "status": "🛠️ Em atendimento"
+  },
+  {
+    "id": "matriz_infra",
+    "nome": "matriz",
+    "senha": "123",
+    "setor": "infra",
+    "funcao": "matriz",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "sinos_infra",
+    "nome": "sinos",
+    "senha": "123",
+    "setor": "infra",
+    "funcao": "sinos",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "litoral_infra",
+    "nome": "litoral",
+    "senha": "123",
+    "setor": "infra",
+    "funcao": "litoral",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "marcelo_gg",
+    "nome": "Marcelo",
+    "senha": "Marcelo123*",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "edevaldo_gg",
+    "nome": "Edevaldo",
+    "senha": "Edevaldo123*",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "emanuel_gg",
+    "nome": "Emanuel",
+    "senha": "Emanuel123*",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "moises_gg",
+    "nome": "Moises",
+    "senha": "Moises123*",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "andressa_sac",
+    "nome": "Andressa",
+    "senha": "Andressa123*",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "eric_retencao",
+    "nome": "Eric",
+    "senha": "Eric123*",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "joãoricardo_retencao",
+    "nome": "João Ricardo",
+    "senha": "Joao123*",
+    "setor": "retencao",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "rian_quali\r\n",
+    "nome": "Rian",
+    "senha": "123",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": null,
+    "nome": "Junior",
+    "senha": "Junior123*",
+    "setor": "infra",
+    "funcao": "litoral",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "joao_noc",
+    "nome": "JoaoNOC",
+    "senha": "Joao123*",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "vitor_noc",
+    "nome": "VictorNOC",
+    "senha": "Victor123*",
+    "setor": "Suporte",
+    "funcao": "N1",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "roger_noc",
+    "nome": "Roger",
+    "senha": "Roger123*",
+    "setor": "Suporte",
+    "funcao": "N1",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "galvao_litoral",
+    "nome": "Galvao",
+    "senha": "Galvao123*",
+    "setor": "infra",
+    "funcao": "litoral",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "junior_litoral",
+    "nome": "Junior",
+    "senha": "Junior123*",
+    "setor": "infra",
+    "funcao": "litoral",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "joaocarneiro_matriz",
+    "nome": "JoaoCarneiro",
+    "senha": "Joao123*",
+    "setor": "suporte",
+    "funcao": "dev",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "lucas_pazzini",
+    "nome": "Pazzini",
+    "senha": "Pazzini123*",
+    "setor": "suporte",
+    "funcao": "dev",
+    "foto": null,
+    "bio": null,
+    "status": ""
+  },
+  {
+    "id": "matheus_matriz",
+    "nome": "Matheus",
+    "senha": "Matheus123*",
+    "setor": "infra",
+    "funcao": "matriz",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "davi_matriz",
+    "nome": "Davi",
+    "senha": "Davi123*",
+    "setor": "infra",
+    "funcao": "matriz",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "queniel_sinos",
+    "nome": "Queniel",
+    "senha": "Queniel123*",
+    "setor": "infra",
+    "funcao": "sinos",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "lucas_sinos",
+    "nome": "Lucas",
+    "senha": "Lucas123*",
+    "setor": "infra",
+    "funcao": "sinos",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "joao_sinos",
+    "nome": "JoaoSinos",
+    "senha": "Joao123*",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "alessandra_geral",
+    "nome": "Alessandra",
+    "senha": "Alessandra123*",
+    "setor": "gg",
+    "funcao": "gerente",
+    "foto": null,
+    "bio": null,
+    "status": null
+  },
+  {
+    "id": "arnold_noc",
+    "nome": "Arnold",
+    "senha": "Arnold123*",
+    "setor": "suporte",
+    "funcao": "N1",
+    "foto": "",
+    "bio": "",
+    "status": ""
+  },
+  {
+    "id": "esdras_sup",
+    "nome": "Esdras",
+    "senha": "123",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": null,
+    "status": "Online"
+  },
+  {
+    "id": "gabriela_sup",
+    "nome": "Gabriela",
+    "senha": "Gabriela123*",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": "",
+    "status": "Online"
+  },
+  {
+    "id": "jessica_sac",
+    "nome": "Jessica",
+    "senha": "Jessica123*",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": "",
+    "status": "Online"
+  },
+  {
+    "id": "jose_sac",
+    "nome": "Jose",
+    "senha": "Jose123*",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": null,
+    "status": "Online"
+  },
+  {
+    "id": "maico_sup",
+    "nome": "Maico",
+    "senha": "Maico123*",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": null,
+    "status": "Online"
+  },
+  {
+    "id": "adrian_sup",
+    "nome": "Adrian",
+    "senha": "Adrian123*",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": null,
+    "status": "Online"
+  },
+  {
+    "id": "andersono_suporte",
+    "nome": "AndersonO",
+    "senha": "anderson001",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": "Suporte Técnico",
+    "status": "Online"
+  },
+  {
+    "id": "rafael_suporte",
+    "nome": "Raphael",
+    "senha": "rafael001",
+    "setor": "suporte",
+    "funcao": "auxiliar",
+    "foto": "icon.png",
+    "bio": "Suporte Técnico",
+    "status": "Online"
+  },
+  {
+    "nome": "VictorSantos",
+    "senha": "Victor123*",
+    "setor": "suporte",
+    "funcao": "Auxiliar"
+  }
+]

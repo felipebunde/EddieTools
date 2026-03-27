@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meu Perfil - EddieTools</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    :root {
+      --roxo: #380848;
+      --laranja: #ff6f00;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--roxo);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 15px;
+      color: #fff;
+    }
+
+    .perfil-card {
+      background: #ffffff15;
+      backdrop-filter: blur(10px);
+      border: 1px solid #ffffff25;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 820px;
+      color: #fff;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .titulo {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid #ffffff30;
+      padding-bottom: 0.5rem;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-input::placeholder, .form-textarea::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--laranja);
+      box-shadow: 0 0 0 3px rgba(255, 111, 0, 0.25);
+      outline: none;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #ffe9b0;
+    }
+
+    .foto-preview {
+      width: 9rem;
+      height: 9rem;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      object-fit: cover;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .foto-preview:hover {
+      transform: scale(1.05);
+    }
+
+    .botao-salvar {
+      width: 100%;
+      background: var(--laranja);
+      color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 0.9rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(255, 111, 0, 0.3);
+    }
+
+    .botao-salvar:hover {
+      transform: translateY(-1px);
+      background: #e65f00;
+      box-shadow: 0 6px 16px rgba(255, 111, 0, 0.45);
+    }
+
+    .file-input {
+      margin-top: 0.5rem;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .file-input::-webkit-file-upload-button {
+      background: var(--laranja);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .file-input::-webkit-file-upload-button:hover {
+      background: #e65f00;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="perfil-card">
+    <h1 class="titulo"><i class="fas fa-user-circle text-orange-400"></i> Meu Perfil</h1>
+
+    <form action="/perfil" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+      <!-- Coluna Esquerda -->
+      <div class="flex flex-col items-center">
+        <img id="preview" src="{{ url_for('static', filename='perfis/' + usuario.get('foto', 'icon.png')) }}"
+             alt="Foto de perfil" class="foto-preview mb-4">
+        <label class="text-sm text-gray-200">Alterar foto</label>
+        <input type="file" name="foto" accept="image/*" class="file-input" onchange="previewImagem(event)">
+      </div>
+
+      <!-- Coluna Direita -->
+      <div class="space-y-4">
+        <div>
+          <label>Nome</label>
+          <input type="text" name="nome" value="{{ usuario['nome'] }}" class="form-input" required>
+        </div>
+
+        <div>
+          <label>Bio</label>
+          <textarea name="bio" rows="3" class="form-textarea" placeholder="Fale um pouco sobre você...">{{ usuario.get('bio', '') }}</textarea>
+        </div>
+
+        <div>
+          <label>Nova Senha</label>
+          <input type="password" name="senha" class="form-input" placeholder="Deixe em branco se não quiser alterar">
+        </div>
+
+        <div>
+          <label>Status</label>
+          <select name="status" class="form-select">
+            <option value="💬 Online" {% if usuario['status'] == '💬 Online' %}selected{% endif %}>💬 Online</option>
+            <option value="🛠️ Em atendimento" {% if usuario['status'] == '🛠️ Em atendimento' %}selected{% endif %}>🛠️ Em atendimento</option>
+            <option value="👻 Ausente" {% if usuario['status'] == '👻 Ausente' %}selected{% endif %}>👻 Ausente</option>
+            <option value="😴 Dormindo" {% if usuario['status'] == '😴 Dormindo' %}selected{% endif %}>😴 Dormindo</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Rodapé -->
+      <div class="col-span-1 md:col-span-2 pt-6">
+        <button type="submit" class="botao-salvar">
+          <i class="fas fa-save mr-2"></i>Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Preview da imagem de perfil
+    function previewImagem(event) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        const preview = document.getElementById('preview');
+        preview.src = reader.result;
+        preview.style.transform = "scale(1.05)";
+        setTimeout(() => preview.style.transform = "scale(1)", 200);
+      }
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  </script>
+</body>
+</html>

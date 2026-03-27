@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Boas-Vindas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #f4f0f8, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #380848;
+      text-align: center;
+    }
+
+    .conteudo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 90%;
+      max-width: 700px;
+      width: 90%;
+    }
+
+    .dica {
+      font-size: 14px;
+      color: #7b2cbf;
+      opacity: 0.85;
+      font-weight: 500;
+      margin-bottom: 12px;
+      min-height: 24px;
+    }
+
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      animation: fadeIn 1.2s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .titulo {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #6a1b9a;
+    }
+
+    .subtitulo {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 24px;
+    }
+
+    .mascote {
+      width: 100px;
+      margin-bottom: 16px;
+      animation: bounce 2s infinite ease-in-out;
+    }
+
+    .rodape {
+      font-size: 12px;
+      color: #999;
+      font-style: italic;
+      margin-top: 20px;
+    }
+
+    .versao {
+      color: #bbb;
+      font-size: 11px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="conteudo">
+    <!-- Dica do dia -->
+    <div class="dica" id="dicaDoDia">💡 Carregando dica...</div>
+
+    <!-- Cartão central -->
+    <div class="card">
+      <img src="{{ url_for('static', filename='icon.png') }}" alt="Mascote Edy" class="mascote">
+      <div class="titulo">Bem-vindo ao EddieTools</div>
+      <div class="subtitulo">
+        Selecione um painel no menu à esquerda para começar.<br>
+        Estamos prontos para agir com você!
+      </div>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="rodape">
+      EddieTools — Tecnologia e resposta em tempo real para sua rede. <br>
+      <span class="versao">v1.1.4 | Suporte: suporte@edytools.local</span>
+    </div>
+  </div>
+
+  <!-- Script de dica rotativa -->
+  <script>
+    const dicas = [
+      "💡 Dica do dia: Utilize o Painel de Atividades para validar os acionamentos em andamento.",
+      "🛠️ Lembre-se de acionar as caixas antes de criar protocolos.",
+      "📊 Acompanhe as Métricas para ver seu desempenho ao longo da semana.",
+      "📁 Históricos salvos facilitam sua retomada nas pendências!",
+      "🎯 Foque nas caixas mais antigas ou com maior número de clientes.",
+      "📌 Use o menu lateral para navegar entre os painéis com mais agilidade.",
+    ];
+
+    function trocarDica() {
+      const dica = dicas[Math.floor(Math.random() * dicas.length)];
+      document.getElementById("dicaDoDia").innerText = dica;
+    }
+
+    trocarDica(); // Primeira dica ao carregar
+    setInterval(trocarDica, 15000); // Troca a cada 15 segundos
+  </script>
+
+</body>
+</html>

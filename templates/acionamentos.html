@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acionar Caixa</title>
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f3f3f3;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+
+    .titulo-formulario {
+      font-size: 26px;
+      font-weight: bold;
+      color: #7b2cbf;
+      background: #f3e5f5;
+      padding: 10px 20px;
+      border-left: 5px solid #7b2cbf;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .form-container {
+      max-width: 675px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #5a189a;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #7b2cbf;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background-color: #7b2cbf;
+      color: white;
+      font-weight: 600;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background-color: #5a189a;
+    }
+
+    @media (max-width: 640px) {
+      .titulo-formulario {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1 class="titulo-formulario">📤 Acionamento de Caixa</h1>
+
+  <div class="form-container">
+    <form method="POST" action="/acionamentos">
+      <div class="flex gap-4 mb-4">
+        <div class="form-group w-1/2">
+          <label for="regiao">Região</label>
+          <input type="text" id="regiao" name="regiao" placeholder="Ex: 63" required>
+        </div>
+
+        <div class="form-group w-1/2">
+          <label for="setor">Área</label>
+          <select id="setor" name="setor" required>
+            <option value="">Selecione a Área</option>
+            <option value="Matriz">Matriz</option>
+            <option value="Sinos">Sinos</option>
+            <option value="Litoral">Litoral</option>
+          </select>
+        </div>
+      </div>
+
+
+      <div class="form-group">
+        <label for="cto">CTO</label>
+        <input type="text" id="cto" name="cto" placeholder="Ex: P-X035" required>
+      </div>
+
+      <div class="form-group">
+        <label for="problema">Problema</label>
+        <input type="text" id="problema" name="problema" placeholder="Queda, Offline, etc." required>
+      </div>
+
+      <div class="form-group">
+        <label for="clientes">Clientes Afetados</label>
+        <input type="number" id="clientes" name="clientes" min="1" placeholder="Ex: 5" required>
+      </div>
+
+      <div class="form-group">
+        <label for="obs">Observações</label>
+        <textarea id="obs" name="obs" rows="4"
+          placeholder="Ex: validado na OLT, previsão de normalização..."></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">🚀 Acionar</button>
+    </form>
+  </div>
+
+</body>
+
+</html>

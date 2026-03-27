@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>EddieTools | Menu </title>
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --roxo: #380848;
+      --laranja: #ff6f00;
+      --texto: #fff;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      background: var(--roxo);
+      color: var(--texto);
+      overflow: hidden;
+    }
+
+    .menu {
+      width: 250px;
+      background: var(--roxo);
+      height: 100vh;
+      transition: width 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      scrollbar-width: none;
+      position: relative;
+    }
+
+    .menu::-webkit-scrollbar { display: none; }
+    .menu.fechado { width: 85px; }
+
+    .eddie {
+      width: 90px;
+      margin-top: 10px;
+      cursor: pointer;
+      animation: flutuar 3s infinite ease-in-out;
+      transition: transform 0.3s ease;
+      z-index: 20;
+    }
+
+    @keyframes flutuar {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .eddie:hover {
+      filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
+      transform: scale(1.04);
+    }
+
+    .saudacao {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #ffdba1;
+      text-align: center;
+      transition: opacity 0.4s ease;
+    }
+
+    .menu.fechado .saudacao { opacity: 0; visibility: hidden; height: 0; margin: 0; }
+
+    .top-bar {
+      width: 85%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 12px 0;
+    }
+
+    .pesquisa {
+      flex: 1;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      padding: 7px 12px;
+      outline: none;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .pesquisa::placeholder { color: rgba(255,255,255,0.6); }
+    .menu.fechado .pesquisa { width: 0; padding: 0; opacity: 0; visibility: hidden; }
+
+    .menu a {
+      text-decoration: none;
+      color: white;
+      width: 90%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin: 4px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 15px;
+      transition: background 0.3s ease, border-left 0.3s ease;
+      position: relative;
+    }
+
+    .menu a span {
+      flex: 1;
+      margin-left: 12px;
+      text-align: left;
+    }
+
+    .menu a:hover { background: rgba(255,255,255,0.1); }
+    .menu a.active { background: rgba(255,111,0,0.25); border-left: 2px solid #fff; }
+    .menu.fechado a span { display: none; }
+
+    .badge {
+      background: var(--laranja);
+      color: white;
+      border-radius: 50%;
+      font-size: 11px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      right: 14px;
+    }
+
+    .badge.hidden { display: none; }
+
+    .secao {
+      width: 100%;
+      font-size: 11px;
+      color: #ffb74d;
+      letter-spacing: 1px;
+      margin: 12px 0 4px 22px;
+      text-transform: uppercase;
+    }
+
+    .menu.fechado .secao { display: none; }
+
+    .conteudo {
+      flex: 1;
+      background: var(--roxo);
+      border-top-left-radius: 24px;
+      border-bottom-left-radius: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    .loader-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--roxo);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      z-index: 30;
+    }
+
+    .loader-overlay.ativo {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loader-eddie {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      animation: flutuarLoader 3s ease-in-out infinite;
+    }
+
+    @keyframes flutuarLoader {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .loader-eddie img {
+      width: 70px;
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 2;
+    }
+
+    .loader-eddie::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: var(--laranja);
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    @keyframes fade-in-down {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-down {
+      animation: fade-in-down 0.4s ease-out;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div class="menu" id="menu">
+    <img src="{{ url_for('static', filename='icon.png') }}" id="eddieIcon" class="eddie" alt="Eddie">
+    <div class="saudacao" id="saudacao">Bom dia, {{ nome }} ☀️</div>
+
+    <div class="top-bar">
+      <input type="text" placeholder="Pesquisar..." id="search" class="pesquisa">
+    </div>
+
+    <div id="menuLinks">
+      <div class="secao">Geral</div>
+      <a href="/eddie_home" target="painelFrame"><i data-lucide="home"></i><span>EddieHome</span></a>
+      <a href="/perfil" target="painelFrame"><i data-lucide="user"></i><span>Perfil</span></a>
+
+      <div class="secao">Operacional</div>
+      <a href="/painel_geral" target="painelFrame"><i data-lucide="layout-dashboard"></i><span>Painel Geral</span></a>
+      {% if funcao in ['n2', 'n1', 'dev'] %}
+      <a href="/painel_atividades" target="painelFrame" id="painelAtividadesLink">
+        <i data-lucide="activity"></i><span>Painel de Atividades</span>
+        <div id="contadorBadge" class="badge hidden">0</div>
+      </a>
+      {% endif %}      
+      <a href="/historico_geral" target="painelFrame"><i data-lucide="clock"></i><span>Histórico Geral</span></a>
+
+      <div class="secao">Financeiro</div>
+      <a href="/calcula" target="painelFrame"><i data-lucide="calculator"></i><span>Eddie Calcula</span></a>
+
+			{% if funcao in ['dev', 'supervisor', 'gerente'] %}
+      <div class="secao">Administrativo</div>
+      <a href="/painel_admin" target="painelFrame"><i data-lucide="briefcase"></i><span>Painel Administrativo</span></a>
+    
+      <a href="/metricas" target="painelFrame"><i data-lucide="bar-chart-2"></i><span>Métricas</span></a>
+      <a href="/usuarios" target="painelFrame"><i data-lucide="users"></i><span>Usuários</span></a>
+			{% endif %}
+    
+
+ {% if funcao in ['dev', 'supervisor', 'gerente'] %}
+      <div class="secao">Dev & Interno</div>
+      
+      {% endif %}
+
+    <a href="{{ url_for('logout') }}" id="logoutLink">
+       <i data-lucide="log-out"></i><span>Sair</span>
+     </a>
+       </div>
+      
+  </div>
+
+  <div class="conteudo">
+    <div class="loader-overlay" id="loader">
+      <div class="loader-eddie">
+        <img src="{{ url_for('static', filename='icon.png') }}" alt="Eddie Loader" id="loaderEddie">
+      </div>
+    </div>
+    <iframe src="/boas_vindas" name="painelFrame" id="frame"></iframe>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    lucide.createIcons();
+
+    const eddie = document.getElementById("eddieIcon");
+    const menu = document.getElementById("menu");
+    const search = document.getElementById("search");
+    const menuLinks = document.getElementById("menuLinks");
+    const loader = document.getElementById("loader");
+    const frame = document.getElementById("frame");
+    const loaderEddie = document.getElementById("loaderEddie");
+    const contadorBadge = document.getElementById("contadorBadge");
+
+    // Saudação
+    const hora = new Date().getHours();
+    const nome = "{{ nome }}";
+    let saudacaoTxt = hora < 12 ? `Bom dia, ${nome} ☀️` :
+                      hora < 18 ? `Boa tarde, ${nome} 🌤️` :
+                                  `Boa noite, ${nome} 🌙`;
+    document.getElementById("saudacao").textContent = saudacaoTxt;
+
+    // Piscar natural
+    function piscarNatural(img) {
+      const proximoTempo = Math.random() * (9000 - 4000) + 4000;
+      setTimeout(() => {
+        img.src = img.src.includes("icon2.png")
+          ? "{{ url_for('static', filename='icon.png') }}"
+          : "{{ url_for('static', filename='icon2.png') }}";
+        setTimeout(() => {
+          img.src = "{{ url_for('static', filename='icon.png') }}";
+          piscarNatural(img);
+        }, 180);
+      }, proximoTempo);
+    }
+    piscarNatural(eddie);
+    piscarNatural(loaderEddie);
+
+    // Menu retrátil
+    eddie.addEventListener("click", () => menu.classList.toggle("fechado"));
+
+    // Pesquisa
+    search.addEventListener("input", () => {
+      const termo = search.value.toLowerCase();
+      menuLinks.querySelectorAll("a").forEach(link => {
+        const texto = link.textContent.toLowerCase();
+        link.style.display = texto.includes(termo) ? "flex" : "none";
+      });
+    });
+
+    // Fade + Loader
+    const links = menuLinks.querySelectorAll("a");
+    links.forEach(link => {
+      link.addEventListener("click", e => {
+        const url = link.getAttribute("href");
+    
+        // ⚠️ Exceção para o logout: abre fora do iframe
+        if (url.includes("/logout")) {
+          window.top.location.href = url;
+          return; // sai da função, não intercepta
+        }
+    
+        e.preventDefault();
+        const iframe = document.getElementById("frame");
+    
+        links.forEach(l => l.classList.remove("active"));
+        link.classList.add("active");
+    
+        iframe.style.opacity = "0";
+        loader.classList.add("ativo");
+    
+        setTimeout(() => {
+          iframe.src = url;
+        }, 400);
+      });
+    });
+    
+
+    frame.addEventListener("load", () => {
+      const iframe = document.getElementById("frame");
+      setTimeout(() => {
+        loader.classList.remove("ativo");
+        iframe.style.opacity = "1";
+      }, 500);
+    });
+
+    // Contador via SSE
+    if (!!window.EventSource) {
+      const source = new EventSource("/contador_stream");
+      source.onmessage = function(event) {
+        const contador = parseInt(event.data);
+        if (contador > 0) {
+          contadorBadge.textContent = contador;
+          contadorBadge.classList.remove("hidden");
+        } else {
+          contadorBadge.classList.add("hidden");
+        }
+      };
+    }
+    document.getElementById("logoutLink").addEventListener("click", e => {
+      e.preventDefault();
+      // Redireciona pro logout fora do iframe
+      window.top.location.href = "{{ url_for('logout') }}";
+    });
+
+		// 🔸 Contador de tarefas (sem SSE, via fetch)
+		async function atualizarContadorTasks() {
+		  try {
+		    const resp = await fetch("/contador_tasks");
+		    const dados = await resp.json();
+		    const total = dados.total || 0;
+		    const tasksBadge = document.getElementById("tasksBadge");
+		
+		    if (total > 0) {
+		      tasksBadge.textContent = total;
+		      tasksBadge.classList.remove("hidden");
+		    } else {
+		      tasksBadge.classList.add("hidden");
+		    }
+		  } catch (err) {
+		    console.warn("Erro ao atualizar contador tasks:", err);
+		  }
+		}
+		
+		// atualiza imediatamente e depois a cada 10 s
+		atualizarContadorTasks();
+		setInterval(atualizarContadorTasks, 10000);
+		
+    
+    // 🔸 Contador de tarefas via fetch (sem SSE)
+    async function atualizarContadorTasks() {
+      try {
+        // pega o setor do usuário renderizado pelo backend Flask
+        const setor = "{{ session['usuario']['setor'] if 'usuario' in session else '' }}".toLowerCase();
+        if (!setor) return; // se não tiver setor, não faz nada
+    
+        const resp = await fetch(`/contador_tasks/${setor}`);
+        const dados = await resp.json();
+        const total = dados.total || 0;
+        const tasksBadge = document.getElementById("tasksBadge");
+    
+        if (total > 0) {
+          tasksBadge.textContent = total;
+          tasksBadge.classList.remove("hidden");
+        } else {
+          tasksBadge.classList.add("hidden");
+        }
+      } catch (err) {
+        console.warn("Erro ao atualizar contador de tarefas:", err);
+      }
+    }
+    
+    // atualiza imediatamente e depois a cada 10 segundos
+    atualizarContadorTasks();
+    setInterval(atualizarContadorTasks, 10000);
+    
+    
+    
+  </script>
+</body>
+</html>

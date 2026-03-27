@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico Geral - EddieTools</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --roxo: #380848;
+      --laranja: #ff6f00;
+      --lilas: #ede7f6;
+      --lilas-forte: #c8b2e9;
+      --branco-roxinho: #f8f5fc;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--roxo);
+      color: #2e004f;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 32px 20px;
+    }
+
+    .painel {
+      width: 100%;
+      max-width: 1200px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .titulo {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--roxo);
+      background: var(--lilas);
+      padding: 8px 18px;
+      border-left: 5px solid var(--laranja);
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      align-self: flex-start;
+    }
+
+    /* FILTROS */
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      background: transparent;
+    }
+
+    .filtros input,
+    .filtros select {
+      background: #faf8ff;
+      color: var(--roxo);
+      border: 1px solid var(--lilas-forte);
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 100%;
+      max-width: 280px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    .filtros input::placeholder {
+      color: #7d6a9e;
+    }
+
+    .filtros input:focus,
+    .filtros select:focus {
+      outline: none;
+      border-color: var(--laranja);
+      box-shadow: 0 0 0 3px rgba(255, 111, 0, 0.3);
+      transform: scale(1.02);
+    }
+
+    /* ÁREA SCROLLÁVEL */
+    /* >>> SCROLL INVISÍVEL FINAL <<< */
+    .scroll {
+      flex: 1;
+      overflow-y: overlay !important; /* mantém a rolagem mas sobrepõe o conteúdo */
+      background: transparent;
+      border-radius: 14px;
+      padding-bottom: 20px;
+      scrollbar-gutter: stable both-edges;
+    }
+    
+    /* Chrome, Edge, Safari */
+    .scroll::-webkit-scrollbar {
+      width: 0px !important;
+      background: transparent !important;
+    }
+    
+    /* Firefox */
+    .scroll {
+      scrollbar-width: none !important;
+    }
+    
+    /* Força invisibilidade total mesmo em modo overlay */
+    .scroll::-webkit-scrollbar-track,
+    .scroll::-webkit-scrollbar-thumb {
+      background: transparent !important;
+      border: none !important;
+    }
+    
+    
+
+    /* TABELA */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--branco-roxinho);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    thead {
+      background: var(--lilas);
+      color: var(--roxo);
+      font-weight: 600;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e0d2f5;
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: #f3ebfb;
+    }
+
+    td:first-child {
+      font-weight: 600;
+      color: #6a1b9a;
+    }
+
+    .btn-detalhes {
+      background-color: var(--laranja);
+      color: white;
+      padding: 6px 16px;
+      font-size: 13px;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 8px rgba(255, 111, 0, 0.4);
+    }
+
+    .btn-detalhes:hover {
+      background-color: #e65f00;
+      transform: scale(1.05);
+    }
+
+    /* DETALHES */
+    .detalhes {
+      background: #faf8ff;
+      border: 1px solid #e3d4f5;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+      color: #2e004f;
+    }
+
+    .detalhes h3 {
+      color: #5b1888;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .subcard {
+      background: #fff;
+      border: 1px solid #e3d4f5;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    #modalFoto {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    #modalFoto img {
+      border-radius: 12px;
+      max-height: 80vh;
+      transition: transform 0.3s ease;
+    }
+
+    #modalFoto img:hover {
+      transform: scale(1.03);
+    }
+
+    #modalFoto button {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 26px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    #modalFoto button:hover {
+      color: var(--laranja);
+    }
+
+    footer {
+      text-align: center;
+      color: #bfa5db;
+      padding: 10px 0;
+      background: var(--roxo);
+      font-size: 12px;
+      margin-top: auto;
+    }
+    /* 👇 Mata absolutamente todos os scrolls visuais 👇 */
+    html, body, main, .painel, .scroll {
+      scrollbar-width: none !important;          /* Firefox */
+      -ms-overflow-style: none !important;       /* IE/Edge */
+      overflow-y: auto !important;               /* mantém rolagem */
+      overscroll-behavior: contain !important;   /* bloqueia overscroll */
+    }
+    
+    /* Chrome, Safari, Edge */
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar,
+    main::-webkit-scrollbar,
+    .painel::-webkit-scrollbar,
+    .scroll::-webkit-scrollbar {
+      width: 0px !important;
+      height: 0px !important;
+      display: none !important;
+      background: transparent !important;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="painel">
+      <h1 class="titulo">📚 Histórico Geral</h1>
+
+      <div class="filtros">
+        <input type="text" id="searchInput" placeholder="Buscar por texto livre...">
+        <select id="filtroSetor">
+          <option value="">Todos os setores</option>
+          <option value="Matriz">Matriz</option>
+          <option value="Sinos">Sinos</option>
+          <option value="Litoral">Litoral</option>
+        </select>
+        <select id="filtroStatus">
+          <option value="">Todos os status</option>
+          <option value="pendente">Pendente</option>
+          <option value="em_andamento">Em andamento</option>
+          <option value="resolvido">Resolvido</option>
+          <option value="agendar_migracao">Agendar migração</option>
+          <option value="agendar_sem_voltagem">Agendar sem voltagem</option>
+          <option value="agendar_ajuste_de_drop">Agendar ajuste de drop</option>
+        </select>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>CTO</th>
+              <th>Setor</th>
+              <th>Status</th>
+              <th>Clientes</th>
+              <th>Detalhes</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaDados">
+            {% for caixa in caixas %}
+            <tr data-setor="{{ caixa['setor'] }}" data-status="{{ caixa['status'] }}"
+                data-search="{{ caixa['regiao']|lower }} {{ caixa['cto']|lower }} {{ caixa['problema']|lower }}">
+              <td>{{ caixa['cto'] }}</td>
+              <td>{{ caixa['setor'] }}</td>
+              <td class="capitalize">{{ caixa['status'].replace('_', ' ') }}</td>
+              <td>{{ caixa['clientes'] }}</td>
+              <td><button onclick="toggleDetalhes('{{ caixa['id'] }}')" class="btn-detalhes">Ver detalhes</button></td>
+            </tr>
+            <tr id="detalhes-{{ caixa['id'] }}" class="hidden">
+              <td colspan="5">
+                <div class="detalhes">
+                  <div class="grid md:grid-cols-3 gap-3">
+                    <div class="subcard">
+                      <h3>📥 Abertura</h3>
+                      <p><strong>ID:</strong> {{ caixa['id'] }}</p>
+                      <p><strong>Região:</strong> {{ caixa['regiao'] }}</p>
+                      <p><strong>Problema:</strong> {{ caixa['problema'] }}</p>
+                      <p><strong>Criado:</strong> {{ caixa['criado_em_formatado'] }}</p>
+                      <p><strong>Acionado:</strong> {{ caixa['acionado_em_formatado'] or '-' }}</p>
+                      <p><strong>Por:</strong> {{ caixa['acionado_por'] or '-' }}</p>
+                    </div>
+
+                    <div class="subcard">
+                      <h3>✅ Validação</h3>
+                      <p><strong>Validado em:</strong> {{ caixa['validado_em_formatado'] or '-' }}</p>
+                      <p><strong>Por:</strong> {{ caixa['validado_por'] or '-' }}</p>
+                    </div>
+
+                    <div class="subcard">
+                      <h3>🛠️ Resolução</h3>
+                      {% if caixa['resolvido_em_formatado'] %}
+                      <p><strong>Em:</strong> {{ caixa['resolvido_em_formatado'] }}</p>
+                      <p><strong>Por:</strong> {{ caixa['resolvido_por'] or '-' }}</p>
+                      <p><strong>O que foi feito:</strong></p>
+                      <div class="bg-purple-50 rounded p-2 mt-1 text-sm">{{ caixa['resolucao'] or '-' }}</div>
+                      {% if caixa['imagem_resolucao'] %}
+                      <p class="mt-2"><strong>Imagem:</strong>
+                        <a href="javascript:void(0)"
+                          onclick="mostrarFotoModal('{{ url_for('static', filename='fotos/' + caixa['imagem_resolucao']) }}')"
+                          class="text-orange-600 hover:text-orange-700 underline ml-1">Ver imagem</a>
+                      </p>
+                      {% endif %}
+                      {% else %}
+                      <p class="italic text-gray-500">Ainda não resolvido.</p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer>EddieTools © 2025 — Fênix Internet</footer>
+
+  <div id="modalFoto">
+    <button onclick="fecharFoto()">✕</button>
+    <img id="imagemFoto" src="" alt="Foto da resolução">
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const filtroSetor = document.getElementById('filtroSetor');
+    const filtroStatus = document.getElementById('filtroStatus');
+
+    function aplicarFiltros() {
+      const termo = searchInput.value.toLowerCase();
+      const setor = filtroSetor.value;
+      const status = filtroStatus.value;
+
+      document.querySelectorAll('#tabelaDados tr').forEach(linha => {
+        if (!linha.dataset.search) return;
+        const match = (!setor || linha.dataset.setor === setor)
+          && (!status || linha.dataset.status === status)
+          && (!termo || linha.dataset.search.includes(termo));
+        linha.style.display = match ? '' : 'none';
+      });
+    }
+
+    searchInput.addEventListener('input', aplicarFiltros);
+    filtroSetor.addEventListener('change', aplicarFiltros);
+    filtroStatus.addEventListener('change', aplicarFiltros);
+
+    function toggleDetalhes(id) {
+      document.getElementById(`detalhes-${id}`).classList.toggle('hidden');
+    }
+
+    function mostrarFotoModal(urlImagem) {
+      const modal = document.getElementById('modalFoto');
+      const img = document.getElementById('imagemFoto');
+      img.src = urlImagem;
+      modal.style.display = 'flex';
+    }
+
+    function fecharFoto() {
+      document.getElementById('modalFoto').style.display = 'none';
+    }
+
+    const eventSource = new EventSource("/atividades-stream");
+    eventSource.onmessage = e => {
+      if (e.data.includes("Painel Geral atualizado")) location.reload();
+    };
+  </script>
+</body>
+</html>

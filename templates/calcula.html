@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>EddieCalcula</title>
+  <link rel="icon" type="image/png" href="edcalc.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <style>
+    html {
+      scrollbar-gutter: stable; /* mantém o layout fixo mesmo com barra */
+    }
+
+    body {
+      background-color: #380848;
+      font-family: 'Segoe UI', sans-serif;
+      overflow-y: overlay; /* evita a barra de pular */
+    }
+
+    /* Animação do Eddie com aura */
+    .left img {
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 15px rgba(138, 43, 226, 0.4));
+      transition: filter 0.6s ease;
+    }
+
+    .left img:hover {
+      filter: drop-shadow(0 0 25px rgba(186, 85, 211, 0.8));
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .arrow {
+      transition: transform 0.3s ease;
+    }
+
+    .arrow.open {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      display: none;
+      transition: all 0.3s ease;
+    }
+
+    .accordion-content.show {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Botões */
+    .btn-base {
+      background-color: #380848;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-base:hover {
+      background-color: #a04ccf;
+      transform: scale(1.02);
+    }
+
+    .btn-active {
+      background-color: #ff6f00 !important;
+      color: #fff !important;
+    }
+  </style>
+</head>
+<body class="flex flex-col md:flex-row h-screen text-gray-800">
+
+  <!-- LADO ESQUERDO -->
+  <div class="left flex-1 flex justify-center items-center p-8">
+    <img src="{{ url_for('static', filename='edcalc.png') }}" alt="EddieCalcula Logo" class="max-w-[80%] max-h-[80%]" />
+  </div>
+
+  <!-- LADO DIREITO -->
+  <div class="flex-1 bg-white rounded-3xl shadow-xl m-6 p-10 flex flex-col">
+    <h1 class="text-center text-3xl font-bold text-purple-800 mb-8 flex justify-center items-center gap-2">
+      💰 EddieCalcula 💰
+    </h1>
+
+    <!-- BOTÃO 1 -->
+    <button id="btn-desconto" onclick="toggleAccordion('desconto')" class="btn-base w-full text-white font-semibold py-3 px-4 rounded-t-xl flex justify-between items-center">
+      📉 Desconto pelo período sem conexão
+      <span id="arrow-desconto" class="arrow">▼</span>
+    </button>
+
+    <!-- CONTEÚDO 1 -->
+    <div id="desconto" class="accordion-content bg-[#ede2fa]/80 p-5 rounded-b-xl shadow-inner">
+      <label class="block font-semibold mb-2">Valor mensal:</label>
+      <input type="text" id="valorMensal1" placeholder="R$ 0,00" oninput="formatarMoeda(this)" class="w-full border rounded-lg px-3 py-2 mb-4">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold mb-2">Data que caiu:</label>
+          <input type="text" id="dataCaiu" placeholder="Selecione" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block font-semibold mb-2">Data que voltou:</label>
+          <input type="text" id="dataVoltou" placeholder="Selecione" class="w-full border rounded-lg px-3 py-2">
+        </div>
+      </div>
+
+      <button onclick="calcularDesconto()" class="w-full mt-6 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-xl">Calcular</button>
+
+      <!-- RESULTADO AQUI DENTRO -->
+      <div id="resultado-desconto" class="hidden mt-6 bg-purple-100 border border-purple-300 text-center text-purple-900 font-semibold p-5 rounded-xl shadow-inner"></div>
+    </div>
+
+    <!-- BOTÃO 2 -->
+    <button id="btn-vencimento" onclick="toggleAccordion('vencimento')" class="btn-base w-full text-white font-semibold py-3 px-4 rounded-t-xl flex justify-between items-center mt-6">
+      📅 Troca de vencimento
+      <span id="arrow-vencimento" class="arrow">▼</span>
+    </button>
+
+    <!-- CONTEÚDO 2 -->
+    <div id="vencimento" class="accordion-content bg-[#ede2fa]/80 p-5 rounded-b-xl shadow-inner">
+      <label class="block font-semibold mb-2">Valor mensal:</label>
+      <input type="text" id="valorMensal2" placeholder="R$ 0,00" oninput="formatarMoeda(this)" class="w-full border rounded-lg px-3 py-2 mb-4">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold mb-2">Data atual de vencimento:</label>
+          <input type="text" id="dataAtual" placeholder="Selecione" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block font-semibold mb-2">Nova data de vencimento:</label>
+          <input type="text" id="dataNova" placeholder="Selecione" class="w-full border rounded-lg px-3 py-2">
+        </div>
+      </div>
+
+      <button onclick="calcularVencimento()" class="w-full mt-6 bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-xl">Calcular</button>
+
+      <!-- RESULTADO AQUI DENTRO -->
+      <div id="resultado-vencimento" class="hidden mt-6 bg-purple-100 border border-purple-300 text-center text-purple-900 font-semibold p-5 rounded-xl shadow-inner"></div>
+    </div>
+
+    <!-- CRÉDITO FIXO -->
+    <p class="text-center text-sm text-purple-700 opacity-70 mt-auto pt-6 select-none">
+      EddieCalcula — desenvolvido por Jader Oliveira 💡
+    </p>
+  </div>
+
+  <script>
+    // Inicializa calendários
+    flatpickr("#dataCaiu, #dataVoltou, #dataAtual, #dataNova", {
+      dateFormat: "d/m/Y",
+      locale: "pt"
+    });
+
+    // Máscara de moeda
+    function formatarMoeda(campo) {
+      let valor = campo.value.replace(/\D/g, "");
+      valor = (valor / 100).toFixed(2) + "";
+      valor = valor.replace(".", ",");
+      valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      campo.value = "R$ " + valor;
+    }
+
+    // Accordion com toggle verdadeiro (abre e fecha o mesmo botão)
+    function toggleAccordion(id) {
+      const section = document.getElementById(id);
+      const arrow = document.getElementById(`arrow-${id}`);
+      const btn = document.getElementById(`btn-${id}`);
+      const isOpen = section.classList.contains("show");
+
+      const sections = document.querySelectorAll(".accordion-content");
+      const arrows = document.querySelectorAll(".arrow");
+      const buttons = document.querySelectorAll("button[id^='btn-']");
+
+      // Fecha tudo antes
+      sections.forEach(s => s.classList.remove("show"));
+      arrows.forEach(a => a.classList.remove("open"));
+      buttons.forEach(b => b.classList.remove("btn-active"));
+
+      // Se estava fechado, abre; se estava aberto, deixa tudo fechado
+      if (!isOpen) {
+        section.classList.add("show");
+        arrow.classList.add("open");
+        btn.classList.add("btn-active");
+      }
+    }
+
+    // Cálculo de desconto
+    function calcularDesconto() {
+      const valor = parseFloat(document.getElementById("valorMensal1").value.replace(/[^\d,]/g, "").replace(",", "."));
+      const dataCaiu = document.getElementById("dataCaiu").value;
+      const dataVoltou = document.getElementById("dataVoltou").value;
+      const resultado = document.getElementById("resultado-desconto");
+
+      if (!valor || !dataCaiu || !dataVoltou) return alert("Preencha todos os campos!");
+
+      const inicio = new Date(dataCaiu.split("/").reverse().join("-"));
+      const fim = new Date(dataVoltou.split("/").reverse().join("-"));
+      const diasSem = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
+
+      if (diasSem <= 0) return alert("A data de retorno deve ser posterior à data de queda!");
+
+      const diasMes = new Date(inicio.getFullYear(), inicio.getMonth() + 1, 0).getDate();
+      const desconto = (valor / diasMes) * diasSem;
+
+      resultado.classList.remove("hidden");
+      resultado.innerHTML = `
+        📅 Dias sem conexão: <b>${diasSem}</b><br>
+        💸 Desconto: <b>R$ ${desconto.toFixed(2).replace(".", ",")}</b>
+      `;
+    }
+
+    // Cálculo de vencimento
+    function calcularVencimento() {
+      const valor = parseFloat(document.getElementById("valorMensal2").value.replace(/[^\d,]/g, "").replace(",", "."));
+      const dataAtual = document.getElementById("dataAtual").value;
+      const dataNova = document.getElementById("dataNova").value;
+      const resultado = document.getElementById("resultado-vencimento");
+
+      if (!valor || !dataAtual || !dataNova) return alert("Preencha todos os campos!");
+
+      const inicio = new Date(dataAtual.split("/").reverse().join("-"));
+      const fim = new Date(dataNova.split("/").reverse().join("-"));
+      const dias = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
+
+      if (dias <= 0) return alert("A nova data deve ser posterior à atual!");
+
+      const proporcional = (valor / 30) * dias;
+
+      resultado.classList.remove("hidden");
+      resultado.innerHTML = `
+        📅 Dias corridos: <b>${dias}</b><br>
+        💰 Valor proporcional: <b>R$ ${proporcional.toFixed(2).replace(".", ",")}</b>
+      `;
+    }
+  </script>
+</body>
+</html>

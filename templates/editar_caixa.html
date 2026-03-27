@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Caixa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+  <div class="max-w-4xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-purple-700">Editar Caixa #{{ caixa.id }}</h1>
+      <a href="/acionamentos" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+        Voltar
+      </a>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow">
+      <form method="POST">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Região</label>
+            <input type="text" name="regiao" value="{{ caixa.regiao }}"
+              class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Setor</label>
+            <select name="setor" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+              <option value="Matriz" {% if caixa.setor=='Matriz' %}selected{% endif %}>Matriz</option>
+              <option value="Sinos" {% if caixa.setor=='Sinos' %}selected{% endif %}>Sinos</option>
+              <option value="Litoral" {% if caixa.setor=='Litoral' %}selected{% endif %}>Litoral</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">CTO</label>
+            <input type="text" name="cto" value="{{ caixa.cto }}"
+              class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Status</label>
+            <select name="status" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+              {% for key, value in status_options.items() %}
+              <option value="{{ value }}" {% if caixa.status==value %}selected{% endif %}>
+                {{ value.replace('_', ' ').title() }}
+              </option>
+              {% endfor %}
+            </select>
+
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Problema</label>
+            <input type="text" name="problema" value="{{ caixa.problema }}"
+              class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Clientes Afetados</label>
+            <input type="number" name="clientes" value="{{ caixa.clientes }}"
+              class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Data/Hora Acionamento</label>
+            <input type="text" value="{{ caixa.criado_em }}"
+              class="mt-1 block w-full border border-gray-300 rounded-md p-2 bg-gray-100" readonly>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Observações</label>
+          <textarea name="obs"
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2 h-24">{{ caixa.obs }}</textarea>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+            Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <style>
+    .bg-gray-500 {
+      background-color: #ff6f00 !important;
+    }
+
+    .bg-gray-500:hover {
+      background-color: #6a1b9a !important;
+    }
+  </style>
+</body>
+
+</html>

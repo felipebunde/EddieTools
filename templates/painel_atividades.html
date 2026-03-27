@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f3f3;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .titulo-painel {
+      font-size: 26px;
+      font-weight: bold;
+      color: #7b2cbf;
+      background: #f3e5f5;
+      padding: 8px 16px;
+      border-left: 5px solid #7b2cbf;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px #00000010;
+      margin-bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    thead {
+      background-color: #ede7f6;
+      color: #4a148c;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"] {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    input[readonly] {
+      background-color: #f8f8f8;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    .salvamento-btn {
+      background-color: #7b2cbf;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: background-color 0.3s ease;
+    }
+
+    .salvamento-btn:hover {
+      background-color: #5a1e9e;
+    }
+
+    form {
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      td,
+      th {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      input[type="text"],
+      input[type="datetime-local"] {
+        font-size: 12px;
+      }
+
+      .salvamento-btn {
+        font-size: 12px;
+        padding: 5px 10px;
+      }
+    }
+  </style>
+</head>
+
+<script>
+  const eventSource = new EventSource("/atividades-stream");
+
+  eventSource.onmessage = function (event) {
+    console.log("🔔 Notificação recebida:", event.data);
+    if (event.data === "atualizar") return;
+
+    const audio = new Audio("/static/sons/notificacao.mp3");
+    audio.play().catch(err => console.warn("Erro ao tocar som:", err));
+  };
+
+  function confirmarExclusao(id) {
+    if (confirm("Tem certeza que deseja excluir?")) {
+      fetch(`/excluir_caixa/${id}`, { method: 'POST' })
+        .then(response => {
+          if (response.redirected) window.location.href = response.url;
+          else alert('Erro ao excluir. Tente novamente.');
+        });
+    }
+  }
+</script>
+
+<body>
+  <h1 class="titulo-painel">🛠️ Painel de Validação de Acionamentos</h1>
+
+  <div class="max-w-7xl mx-auto mt-2 p-2">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Região</th>
+          <th>CTO</th>
+          <th>Problema</th>
+          <th>Clientes</th>
+          <th>Observações</th>
+          <th>Acionado em</th>
+          <th>Protocolo</th>
+          <th>Previsão</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for caixa in caixas %}
+        <form method="post" action="{{ url_for('atualizar_caixa') }}">
+          <tr>
+            <td>{{ caixa['id'] }}<input type="hidden" name="id" value="{{ caixa['id'] }}"></td>
+            <td>{{ caixa['regiao'] }}</td>
+            <td>{{ caixa['cto'] }}</td>
+            <td>{{ caixa['problema'] }}</td>
+            <td>{{ caixa['clientes'] }}</td>
+            <td>{{ caixa['obs'] if caixa['obs'] else '' }}</td>
+            <td>{{ caixa['criado_em'] }}</td>
+            <td>
+              <input type="text" name="protocolo" readonly
+                value="ED-{{ caixa['id'] }}">
+            </td>
+            <td><input type="datetime-local" name="previsao" required></td>
+            <td class="flex justify-center gap-1">
+              <button type="submit" class="salvamento-btn">💾 Salvar</button>
+              <button type="button"
+                class="salvamento-btn bg-purple-800 hover:bg-purple-700"
+                onclick="confirmarExclusao({{ caixa['id']|tojson }})">🗑️ Excluir</button>
+            </td>
+          </tr>
+        </form>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+
+</html>

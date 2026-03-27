@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EddieHome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/build/vanilla-calendar.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro/build/vanilla-calendar.min.js"></script>
+
+    <style>
+        body {
+            background: #380848;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            zoom: 0.9;
+        }
+
+        /* Top Bar Moderna e Minimalista */
+        /* Top Bar Elegante com Borda Arredondada */
+        .top-bar {
+            display: flex;
+            justify-content: center;
+            padding: 5px 0;
+            position: relative;
+        }
+
+        .top-bar-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 16px;
+            padding: 10px 24px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: fit-content;
+        }
+
+        .top-bar-separator {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .top-bar-name {
+            color: #ff6f00;
+            font-weight: 600;
+        }
+
+        /* Container principal */
+        .scroll-x {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+
+            /* Efeito de fade nas bordas */
+            mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 85%, rgba(0, 0, 0, 0) 100%);
+            -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 85%, rgba(0, 0, 0, 0) 100%);
+
+            width: 750px;
+            min-width: 0;
+            flex-shrink: 0;
+            position: relative;
+            overflow-x: auto !important;
+            overflow-y: hidden;
+            cursor: grab;
+        }
+
+        /* Wrapper interno */
+        .scroll-inner {
+            display: flex;
+            gap: 14px;
+            padding: 20px 40px;
+            margin: 0 -20px;
+        }
+
+        /* Oculta a barra de rolagem */
+        .scroll-x::-webkit-scrollbar {
+            height: 0px;
+            background: transparent;
+        }
+
+        .scroll-x {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        /* Post-its */
+        .postit {
+            width: 220px;
+            height: 150px;
+            /* 🔒 altura fixa */
+            border-radius: 10px;
+            padding: 18px 20px 8px 28px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            /* impede que o texto ultrapasse */
+            flex-shrink: 0;
+            scroll-snap-align: start;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        .postit .descricao {
+            max-height: 60px;
+            /* 🔒 limita o texto */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            /* 🔢 exibe até 3 linhas */
+            -webkit-box-orient: vertical;
+            font-size: 0.9rem;
+            line-height: 1.2rem;
+            color: #333;
+        }
+
+        /* Hover */
+        .postit:hover {
+            transform: scale(1.1) translateY(-5px);
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Cores */
+        .empresa {
+            background: #FFE8C2;
+        }
+
+        .equipe {
+            background: #E9D9FF;
+        }
+
+        .pessoal {
+            background: #FFF7C2;
+        }
+
+        /* Alfinete na ESQUERDA */
+        .pin {
+            position: absolute;
+            top: 6px;
+            left: 10px;
+            /* Agora na esquerda */
+            font-size: 1.3rem;
+            transform: rotate(18deg);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            height: 100%;
+            overflow: visible;
+            box-shadow: 6px 0 12px rgba(0, 0, 0, 0.25), 0 6px 12px rgba(0, 0, 0, 0.20);
+            /* Remove padding interno para expandir */
+            padding: 0;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 💜 Só aplica fundo no formulário (criação de post-it) */
+        .modal-content form {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 24px 30px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            color: #4b0082;
+        }
+
+
+
+
+        .close-modal {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            font-size: 1.4rem;
+            color: #6d28d9;
+            cursor: pointer;
+        }
+
+        #feed-caixas {
+            max-height: 330px;
+            /* altura que mostra 3 caixas */
+            overflow-y: auto;
+            scrollbar-width: none;
+            /* oculta barra Firefox */
+            -ms-overflow-style: none;
+            /* IE */
+        }
+
+        #feed-caixas::-webkit-scrollbar {
+            display: none;
+            /* oculta barra Chrome */
+        }
+
+        /* Estilos persistentes para o calendário */
+        .vanilla-calendar-day__btn_today {
+            background-color: #380848 !important;
+            color: white !important;
+            font-weight: bold !important;
+            border-radius: 8px !important;
+        }
+
+        [data-calendar-day].vanilla-calendar-day__btn_holiday,
+        .feriado-indicator {
+            background-color: #ff6f00b9 !important;
+        }
+
+        .feriado-indicator {
+            width: 6px;
+            height: 6px;
+            background-color: #ff6f00;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .ver-mais {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.9rem;
+            color: #6d28d9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .ver-mais:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.15);
+        }
+
+        .modal-content::-webkit-scrollbar,
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb,
+        .modal-body::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .modal.active .modal-content {
+            animation: aparecer 0.25s ease-out;
+        }
+
+        @keyframes aparecer {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="text-gray-800">
+    <!-- 🏠 Topbar Moderna -->
+    <header class="top-bar">
+        <div class="top-bar-content">
+            <span>🏠 EddieHome</span>
+            <span class="top-bar-separator">|</span>
+            <span id="saudacao">🕒 --:-- | -- --, {{ nome }} 👋</span>
+        </div>
+    </header>
+
+    <!-- GRID PRINCIPAL -->
+    <main class="grid grid-cols-[7fr_5fr] gap-2 min-h-[calc(100vh-76px)] p-0">
+        <!-- 📝 MURAL -->
+        <section class="glass flex flex-col p-4 h-full overflow-visible">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-2xl font-semibold text-purple-800">📝 Mural de Recados</h2>
+                <button onclick="abrirFormulario()"
+                    class="bg-[#380848] hover:bg-orange-500 transition text-white rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-md">+</button>
+
+            </div>
+
+            <!-- 📢 EMPRESA -->
+            <div class="border-b-2 border-orange-400 mb-2"></div>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg text-orange-500 font-medium">📢 Empresa</h3>
+            </div>
+            <div id="empresa" class="scroll-x mb-4">
+                <div class="scroll-inner"></div>
+            </div>
+
+
+            <!-- 🧑‍💻 EQUIPE -->
+            <div class="border-b-2 border-purple-300 mb-2"></div>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg text-purple-700 font-medium">🧑‍💻 Equipe</h3>
+            </div>
+            <div id="equipe" class="scroll-x mb-4">
+                <div class="scroll-inner"></div>
+            </div>
+
+            <!-- 🧠 MEUS LEMBRETES -->
+            <div class="border-b-2 border-yellow-300 mb-2"></div>
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg text-amber-500 font-medium">🧠 Meus Lembretes</h3>
+            </div>
+            <div id="pessoais" class="scroll-x">
+                <div class="scroll-inner"></div>
+            </div>
+        </section>
+
+        <!-- 📅 COLUNA DIREITA -->
+        <section class="flex flex-col justify-between gap-6 h-full">
+            <!-- Calendário + Clima -->
+            <div class="glass p-5 flex-1">
+                <h3 class="text-lg text-purple-700 mb-3 font-semibold">📅 Calendário & Clima</h3>
+                <div class="grid grid-cols-[1fr_2fr] gap-4 items-center">
+                    <div id="calendar"></div>
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="text-4xl mb-1">☀️</div>
+                        <div class="text-2xl font-bold text-orange-500">27°C</div>
+                        <p class="text-sm text-gray-700">Novo Hamburgo</p>
+                        <p class="text-xs text-gray-500">Ensolarado</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feed -->
+            <div class="glass p-5 flex-1">
+                <h3 class="text-lg text-purple-700 mb-3 font-semibold">📡 Feed de Caixas Acionadas</h3>
+                <div class="flex flex-col gap-3" id="feed-caixas"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">✖️</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const usuarioLogado = "{{ nome }}";
+        console.log("Função logada:", "{{ funcao }}");
+        console.log("Setor logado:", "{{ setor }}");
+        // 🔥 SCROLL HORIZONTAL MELHORADO
+        document.querySelectorAll('.scroll-x').forEach(container => {
+            let isScrolling = false;
+
+            container.addEventListener('wheel', (e) => {
+                // Verifica se há conteúdo para scrollar
+                if (container.scrollWidth <= container.clientWidth) return;
+
+                // Previne o scroll vertical padrão
+                e.preventDefault();
+
+                // Scroll mais suave e responsivo
+                const scrollAmount = e.deltaY * 1.5;
+                container.scrollLeft += scrollAmount;
+
+                // Feedback visual
+                isScrolling = true;
+                container.style.cursor = 'grabbing';
+
+                clearTimeout(container.scrollTimeout);
+                container.scrollTimeout = setTimeout(() => {
+                    isScrolling = false;
+                    container.style.cursor = 'grab';
+                }, 150);
+            }, { passive: false });
+
+            // Suporte a arraste com mouse
+            let isDragging = false;
+            let startX;
+            let scrollLeft;
+
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.pageX - container.offsetLeft;
+                scrollLeft = container.scrollLeft;
+                container.style.cursor = 'grabbing';
+            });
+
+            container.addEventListener('mouseleave', () => {
+                isDragging = false;
+                container.style.cursor = 'grab';
+            });
+
+            container.addEventListener('mouseup', () => {
+                isDragging = false;
+                container.style.cursor = 'grab';
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - container.offsetLeft;
+                const walk = (x - startX) * 2;
+                container.scrollLeft = scrollLeft - walk;
+            });
+        });
+
+        // Saudação
+        function atualizarSaudacao() {
+            const agora = new Date();
+            const h = agora.getHours().toString().padStart(2, '0');
+            const m = agora.getMinutes().toString().padStart(2, '0');
+            const saudacao = h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";
+            document.getElementById("saudacao").innerHTML = `🕒 ${h}:${m} | ${saudacao}, <span class="top-bar-name">{{ nome }}</span> 👋`;
+        }
+        atualizarSaudacao();
+        setInterval(atualizarSaudacao, 60000);
+
+        // Calendário
+        const calendar = new VanillaCalendar('#calendar', {
+            settings: { visibility: { theme: 'light' }, selection: { day: 'current' }, lang: 'pt-BR' }
+        });
+        calendar.init();
+
+        // Modal dos post-its
+        function expandPostit(el) {
+            const modal = document.getElementById('modal');
+            const body = document.getElementById('modal-body');
+            const bgColor = window.getComputedStyle(el).backgroundColor;
+
+            const titulo = el.getAttribute('data-titulo');
+            const descricao = el.getAttribute('data-descricao');
+            const autor = el.getAttribute('data-autor');
+            const id = el.getAttribute('data-id');
+
+            // verifica permissão
+            const podeEditar = autor && usuarioLogado && autor.trim().toLowerCase() === usuarioLogado.trim().toLowerCase();
+
+            body.innerHTML = `
+        <div style="
+            background:${bgColor};
+            border-radius: 14px;
+            padding: 24px 28px 60px 28px;
+            width: clamp(340px, 60vw, 520px);
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            font-family: 'Inter', sans-serif;
+            color: #222;
+            line-height: 1.4rem;
+            position: relative;
+        ">
+            <input id="edit-titulo" value="${titulo}" ${podeEditar ? '' : 'readonly'} 
+                style="width:100%;font-size:1.2rem;font-weight:700;margin-bottom:10px;border:none;background:transparent;color:#6d28d9;outline:none;">
+            <textarea id="edit-descricao" ${podeEditar ? '' : 'readonly'} 
+                style="width:100%;height:200px;border:none;background:transparent;resize:none;font-size:1rem;outline:none;white-space:pre-wrap;">${descricao}</textarea>
+            <p style="font-size:0.85rem;color:#555;">– ${autor}</p>
+
+            ${podeEditar ? `
+            <div style="position:absolute;bottom:10px;right:15px;display:flex;gap:8px;">
+                <button onclick="salvarPostit(${id})"
+                    style="background:#16a34a;color:white;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;">💾 Salvar</button>
+                <button onclick="excluirPostit(${id})"
+                    style="background:#dc2626;color:white;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;">🗑️ Excluir</button>
+            </div>` : ""}
+        </div>
+    `;
+
+            modal.classList.add('active');
+        }
+
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+        function abrirFormulario() {
+            const modal = document.getElementById('modal');
+            const body = document.getElementById('modal-body');
+
+            const funcao = "{{ funcao }}"; // Flask vai preencher isso
+            let opcoes = `<option value="pessoal">🧠 Pessoal</option>`;
+            if (["dev", "supervisor", "n2"].includes(funcao)) {
+                opcoes += `<option value="empresa">📢 Empresa</option>`;
+            }
+            opcoes += `<option value="equipe">🧑‍💻 Equipe</option>`;
+
+            body.innerHTML = `
+        <form id="novoPostitForm" class="flex flex-col gap-3 p-3">
+            <label class="font-semibold text-purple-700">Título</label>
+            <input name="titulo" type="text" required class="border p-2 rounded-md focus:ring focus:ring-purple-300"/>
+
+            <label class="font-semibold text-purple-700">Categoria</label>
+            <select name="categoria" required class="border p-2 rounded-md">
+                ${opcoes}
+            </select>
+
+            <label class="font-semibold text-purple-700">Descrição</label>
+            <textarea name="descricao" rows="3" required class="border p-2 rounded-md focus:ring focus:ring-purple-300"></textarea>
+
+            <button type="submit" class="mt-3 bg-green-600 hover:bg-green-700 text-white py-2 rounded-md font-semibold text-lg">✅</button>
+
+        </form>
+    `;
+
+            modal.classList.add('active');
+            document.getElementById('novoPostitForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+
+                const data = {
+                    titulo: formData.get('titulo'),
+                    categoria: formData.get('categoria'),
+                    descricao: formData.get('descricao')
+                };
+
+                const response = await fetch('/adicionar_postit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    await carregarPostits(); // Atualiza mural sem recarregar
+                    closeModal(); // Fecha o modal
+                } else {
+                    console.error('Erro ao salvar o post-it.');
+                }
+
+            });
+        }
+
+        /// 🔄 Carregar post-its do banco
+        async function carregarPostits() {
+            const res = await fetch('/get_postits');
+            const postits = await res.json();
+            ['empresa', 'equipe', 'pessoais'].forEach(id => {
+                document.querySelector(`#${id} .scroll-inner`).innerHTML = '';
+            });
+
+            postits.forEach(p => {
+                const precisaExpandir = p.descricao.length > 120;
+
+                const html = `
+<div 
+    class="postit ${p.categoria}" 
+    onclick="expandPostit(this)" 
+    data-id="${p.id}" 
+    data-titulo="${p.titulo}" 
+    data-descricao="${p.descricao}" 
+    data-autor="${p.autor}">
+    
+    <span class="pin">📌</span>
+    <div class="font-semibold text-purple-800 mb-1">${p.titulo}</div>
+    <div class="descricao">${p.descricao}</div>
+    <small class="text-gray-500">– ${p.autor}</small>
+    ${precisaExpandir ? `<div class="ver-mais">➕</div>` : ""}
+</div>`;
+
+                // CORREÇÃO AQUI: Mapeia "pessoal" para "pessoais"
+                let containerId = p.categoria;
+                if (containerId === 'pessoal') {
+                    containerId = 'pessoais';
+                }
+
+                document.querySelector(`#${containerId} .scroll-inner`).innerHTML += html;
+            });
+        }
+
+        // 🔄 Carregar feed de caixas acionadas - VERSÃO DEFINITIVA
+        async function carregarFeed() {
+            const container = document.getElementById('feed-caixas');
+            container.innerHTML = '<p class="text-gray-500 text-sm">Carregando...</p>';
+
+            try {
+                const res = await fetch('/feed_acionamentos');
+                if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+                const feed = await res.json();
+
+                if (!Array.isArray(feed) || feed.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-sm">Nenhum registro encontrado.</p>';
+                    return;
+                }
+
+                const statusMap = {
+                    'em_andamento': { nome: 'Em Andamento', cor: 'yellow', emoji: '🟡' },
+                    'resolvido': { nome: 'Resolvido', cor: 'green', emoji: '🟢' },
+                    'pendente': { nome: 'Pendente', cor: 'orange', emoji: '🟠' },
+                    'agendar_sem_voltagem': { nome: 'Agendar Sem Voltagem', cor: 'purple', emoji: '🟣' },
+                    'agendar_migracao': { nome: 'Agendar Migração', cor: 'purple', emoji: '🟣' },
+                    'agendar_ajuste_de_drop': { nome: 'Agendar Ajuste', cor: 'purple', emoji: '🟣' }
+                };
+
+                container.innerHTML = feed.map(item => {
+                    const statusLower = (item.status || '').toLowerCase();
+                    const statusInfo = statusMap[statusLower] || { nome: item.status || '—', cor: 'gray', emoji: '⚪' };
+
+                    const nomeCaixa = item.cto || '—';
+                    const nomePessoa = item.resolvido_por || item.validado_por || item.acionado_por || '—';
+                    const tempo = item.tempo || '—';
+
+                    return `
+                <div class="border-l-4 border-${statusInfo.cor}-500 bg-${statusInfo.cor}-50 p-3 rounded-md">
+                    <b>${nomeCaixa}</b><br>
+                    <small>${statusInfo.emoji} ${statusInfo.nome} | ${nomePessoa} — ${tempo}</small>
+                </div>
+            `;
+                }).join('');
+
+            } catch (err) {
+                console.error("Erro ao carregar feed:", err);
+                container.innerHTML = `<p class="text-red-500 text-sm">Erro ao carregar feed: ${err.message}</p>`;
+            }
+        }
+
+
+        // 🚀 Inicializa ao carregar a página
+        carregarPostits();
+        carregarFeed();
+        setInterval(carregarFeed, 60000);
+        setInterval(carregarPostits, 10000); // Atualiza post-its a cada 10s
+
+        // 📅 Carregar feriados automaticamente (BrasilAPI)
+        async function carregarFeriados() {
+            try {
+                const ano = new Date().getFullYear();
+                const res = await fetch(`https://brasilapi.com.br/api/feriados/v1/${ano}`);
+                const feriados = await res.json();
+                const feriadosDates = feriados.map(f => f.date);
+
+                // Configuração do calendário
+                const calendar = new VanillaCalendar('#calendar', {
+                    settings: {
+                        visibility: {
+                            theme: 'light'
+                        },
+                        selection: {
+                            day: 'single',
+                            time: false,
+                            month: true,
+                            year: true
+                        },
+                        selected: {
+                            dates: [new Date().toISOString().split('T')[0]],
+                            month: new Date().getMonth(),
+                            year: new Date().getFullYear()
+                        },
+                        lang: 'pt-BR'
+                    }
+                });
+
+                calendar.init();
+
+                // Função para aplicar estilos que será chamada sempre que o calendário mudar
+                function aplicarEstilosCalendario() {
+                    // Estilo para o dia atual
+                    const hoje = document.querySelector('.vanilla-calendar-day__btn_today');
+                    if (hoje) {
+                        hoje.style.backgroundColor = '#3B82F6';
+                        hoje.style.color = 'white';
+                        hoje.style.fontWeight = 'bold';
+                        hoje.style.borderRadius = '8px';
+                    }
+
+                    // Estilo para feriados
+                    feriadosDates.forEach(feriadoDate => {
+                        const feriadoElement = document.querySelector(`[data-calendar-day="${feriadoDate}"]`);
+                        if (feriadoElement && !feriadoElement.querySelector('.feriado-indicator')) {
+                            const indicator = document.createElement('div');
+                            indicator.className = 'feriado-indicator';
+                            indicator.style.width = '6px';
+                            indicator.style.height = '6px';
+                            indicator.style.backgroundColor = '#DC2626';
+                            indicator.style.borderRadius = '50%';
+                            indicator.style.position = 'absolute';
+                            indicator.style.bottom = '4px';
+                            indicator.style.left = '50%';
+                            indicator.style.transform = 'translateX(-50%)';
+
+                            feriadoElement.style.position = 'relative';
+                            feriadoElement.appendChild(indicator);
+                            feriadoElement.style.backgroundColor = '#FEF2F2';
+                        }
+                    });
+                }
+
+                // Aplica estilos inicialmente
+                setTimeout(aplicarEstilosCalendario, 100);
+
+                // Observa mudanças no calendário para reaplicar estilos
+                const observer = new MutationObserver(() => {
+                    aplicarEstilosCalendario();
+                });
+
+                // Observa o container do calendário
+                const calendarContainer = document.querySelector('#calendar');
+                if (calendarContainer) {
+                    observer.observe(calendarContainer, {
+                        childList: true,
+                        subtree: true
+                    });
+                }
+
+                // Também reaplica estilos quando o mês/ano mudar
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.vanilla-calendar-arrow') ||
+                        e.target.closest('.vanilla-calendar-month') ||
+                        e.target.closest('.vanilla-calendar-year')) {
+                        setTimeout(aplicarEstilosCalendario, 150);
+                    }
+                });
+
+            } catch (e) {
+                console.error('Erro ao carregar feriados:', e);
+                // Fallback simples
+                const calendar = new VanillaCalendar('#calendar', {
+                    settings: {
+                        visibility: { theme: 'light' },
+                        selection: { day: 'current', time: false },
+                        lang: 'pt-BR'
+                    }
+                });
+                calendar.init();
+            }
+        }
+
+        // 🌦️ Clima em tempo real de Cachoeirinha-RS (Open-Meteo)
+        async function atualizarClima() {
+            try {
+                // Coordenadas de Cachoeirinha-RS
+                const lat = -29.9517;
+                const lon = -51.0939;
+
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                const data = await res.json();
+                const clima = data.current_weather;
+                const temp = Math.round(clima.temperature);
+                const condicao = clima.weathercode;
+
+                let emoji = "☀️";
+                if ([2, 3].includes(condicao)) emoji = "🌤️";
+                if ([45, 48].includes(condicao)) emoji = "🌫️";
+                if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(condicao)) emoji = "🌧️";
+                if ([71, 73, 75, 77].includes(condicao)) emoji = "❄️";
+                if ([95, 96, 99].includes(condicao)) emoji = "⛈️";
+
+                document.querySelector('#calendar').nextElementSibling.innerHTML = `
+            <div class="flex flex-col items-center justify-center">
+                <div class="text-4xl mb-1">${emoji}</div>
+                <div class="text-2xl font-bold text-orange-500">${temp}°C</div>
+                <p class="text-sm text-gray-700">Cachoeirinha-RS</p>
+                <p class="text-xs text-gray-500">Atualizado agora</p>
+            </div>`;
+            } catch (err) {
+                console.error("Erro ao carregar clima:", err);
+            }
+        }
+
+        carregarFeriados();
+        atualizarClima();
+        setInterval(atualizarClima, 600000); // Atualiza a cada 10min
+        async function salvarPostit(id) {
+            const titulo = document.getElementById('edit-titulo').value;
+            const descricao = document.getElementById('edit-descricao').value;
+
+            const res = await fetch(`/editar_postit/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo, descricao })
+            });
+
+            if (res.ok) {
+                await carregarPostits();
+                closeModal();
+            } else {
+                console.error('Erro ao editar post-it.');
+            }
+        }
+
+        async function excluirPostit(id) {
+            if (!confirm('Excluir este post-it?')) return;
+
+            const res = await fetch(`/excluir_postit/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                await carregarPostits();
+                closeModal();
+            } else {
+                console.error('Erro ao excluir post-it.');
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

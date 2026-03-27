@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Métricas</title>
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .titulo-metricas {
+      font-size: 26px;
+      font-weight: bold;
+      color: #7b2cbf;
+      background: #f3e5f5;
+      padding: 8px 16px;
+      border-left: 5px solid #7b2cbf;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px #00000010;
+      margin-bottom: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+  <div class="max-w-7xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="titulo-metricas">📏 Métricas</h1>
+      <div class="flex gap-2">
+        <a href="/painel_admin"
+          class="bg-[#380848] hover:bg-[#ff6f00] text-white font-semibold px-4 py-2 rounded-xl shadow-md transition-all">
+          🔙 Voltar ao Painel
+        </a>
+        <button onclick="mostrarSecao('graficos')"
+          class="bg-[#380848] hover:bg-[#ff6f00] text-white font-semibold px-4 py-2 rounded-xl shadow-md transition-all">
+          📈 Ver Gráficos
+        </button>
+      </div>
+    </div>
+
+
+    <!-- Seção Tabela -->
+    <div id="secaoTabela">
+      <div class="flex flex-wrap gap-4 mb-6">
+        <input type="text" id="filtroTexto" placeholder="🔍 Buscar por CTO, setor ou nome..."
+          class="w-full md:w-1/4 p-2 border border-purple-300 rounded shadow-sm" oninput="filtrarTabela()">
+
+        <select id="filtroSetor" class="p-2 border border-purple-300 rounded shadow-sm" onchange="filtrarTabela()">
+          <option value="">Todos os setores</option>
+          <option value="Matriz">Matriz</option>
+          <option value="Sinos">Sinos</option>
+          <option value="Litoral">Litoral</option>
+        </select>
+
+        <input type="text" id="filtroUsuario" placeholder="👤 Acionado por..."
+          class="p-2 border border-purple-300 rounded shadow-sm" oninput="filtrarTabela()">
+
+        <input type="date" id="filtroDataInicio" class="p-2 border border-purple-300 rounded shadow-sm"
+          onchange="filtrarTabela()">
+        <input type="date" id="filtroDataFim" class="p-2 border border-purple-300 rounded shadow-sm"
+          onchange="filtrarTabela()">
+      </div>
+
+      <div class="overflow-auto bg-white rounded shadow mb-10">
+        <table class="min-w-full divide-y divide-gray-300" id="tabelaMetricas">
+          <thead class="bg-purple-100 text-left text-sm font-medium text-gray-700">
+            <tr>
+              <th class="px-4 py-2">ID</th>
+              <th class="px-4 py-2">Setor</th>
+              <th class="px-4 py-2">CTO</th>
+              <th class="px-4 py-2">Criado em</th>
+              <th class="px-4 py-2">Acionado em</th>
+              <th class="px-4 py-2">Tempo de resposta</th>
+              <th class="px-4 py-2">Previsão</th>
+              <th class="px-4 py-2">Status</th>
+              <th class="px-4 py-2">Acionado por</th>
+              <th class="px-4 py-2">Validado por</th>
+              <th class="px-4 py-2">Tempo total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 text-sm">
+            {% for caixa in caixas %}
+            <tr class="linha-metrica hover:bg-gray-50">
+              <td class="px-4 py-2">{{ caixa.id }}</td>
+              <td class="px-4 py-2">{{ caixa.setor }}</td>
+              <td class="px-4 py-2">{{ caixa.cto }}</td>
+              <td class="px-4 py-2">{{ caixa.criado_em }}</td>
+              <td class="px-4 py-2">{{ caixa.acionado_em }}</td>
+              <td class="px-4 py-2">{{ caixa.tempo_resposta }}</td>
+              <td class="px-4 py-2">{{ caixa.previsao }}</td>
+              <td class="px-4 py-2">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold
+                  {% if caixa.status == 'Resolvido' %}bg-green-100 text-green-800
+                  {% elif caixa.status == 'Em Andamento' %}bg-yellow-100 text-yellow-800
+                  {% else %}bg-gray-200 text-gray-800{% endif %}">
+                  {{ caixa.status }}
+                </span>
+              </td>
+              <td class="px-4 py-2">{{ caixa.acionado_por }}</td>
+              <td class="px-4 py-2">{{ caixa.validado_por }}</td>
+              <td class="px-4 py-2">{{ caixa.tempo_total }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Seção Gráficos -->
+    <div id="secaoGraficos" class="hidden">
+      <div class="bg-white p-4 rounded shadow mb-6">
+        <h2 class="text-xl font-bold mb-4">📈 Gráficos de Métricas</h2>
+        <div class="flex flex-wrap gap-4">
+          <select id="tipoGrafico" class="p-2 border border-purple-300 rounded">
+            <option value="acionamentos">Acionamentos por Agente</option>
+            <option value="validacoes">Validações por Agente</option>
+            <option value="tempo_medio">Tempo Médio por Agente</option>
+          </select>
+          <button onclick="atualizarGrafico()"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">Atualizar</button>
+          <button onclick="mostrarSecao('tabela')"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">⬅️ Voltar</button>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded shadow">
+        <canvas id="graficoMetricas" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let chart;
+
+    function mostrarSecao(secao) {
+      document.getElementById('secaoTabela').classList.toggle('hidden', secao !== 'tabela');
+      document.getElementById('secaoGraficos').classList.toggle('hidden', secao !== 'graficos');
+    }
+
+    function atualizarGrafico() {
+      const tipo = document.getElementById("tipoGrafico").value;
+      const labels = [];
+      const valores = [];
+      const dados = {};
+
+      document.querySelectorAll("#tabelaMetricas tbody tr").forEach(tr => {
+        const nome = tipo === 'validacoes' ? tr.children[9].textContent.trim() : tr.children[8].textContent.trim();
+        if (!nome || nome === '—' || nome === '-') return;
+
+        let minutos = 0;
+        if (tipo === 'tempo_medio') {
+          const tempoTotal = tr.children[10].textContent.trim();
+          const [h, min] = tempoTotal.replace("min", "").split("h");
+          if (h === undefined || min === undefined) return;
+          minutos = (parseInt(h) || 0) * 60 + (parseInt(min) || 0);
+        }
+
+        if (!dados[nome]) dados[nome] = { count: 0, total: 0 };
+        dados[nome].count++;
+        dados[nome].total += tipo === 'tempo_medio' ? minutos : 1;
+      });
+
+      for (let nome in dados) {
+        labels.push(nome);
+        valores.push(tipo === 'tempo_medio' ? (dados[nome].total / dados[nome].count).toFixed(1) : dados[nome].total);
+      }
+
+      const ctx = document.getElementById("graficoMetricas").getContext('2d');
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: tipo.replace("_", " ").toUpperCase(),
+            data: valores,
+            backgroundColor: '#7b2cbf'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function filtrarTabela() {
+      const texto = document.getElementById("filtroTexto").value.toLowerCase();
+      const setor = document.getElementById("filtroSetor").value.toLowerCase();
+      const usuario = document.getElementById("filtroUsuario").value.toLowerCase();
+      const dataInicio = document.getElementById("filtroDataInicio").value;
+      const dataFim = document.getElementById("filtroDataFim").value;
+
+      const linhas = document.querySelectorAll(".linha-metrica");
+      linhas.forEach(linha => {
+        const conteudo = linha.textContent.toLowerCase();
+        const correspondeTexto = conteudo.includes(texto);
+        const correspondeSetor = setor === "" || linha.children[1].textContent.toLowerCase() === setor;
+        const correspondeUsuario = conteudo.includes(usuario);
+
+        const dataTexto = linha.children[3].textContent.trim().split(" - ").pop();
+        const data = dataTexto ? new Date(dataTexto.split("/").reverse().join("-")) : null;
+        const inicio = dataInicio ? new Date(dataInicio) : null;
+        const fim = dataFim ? new Date(dataFim) : null;
+
+        const dentroDoPeriodo = (!inicio || data >= inicio) && (!fim || data <= fim);
+
+        linha.style.display = (correspondeTexto && correspondeSetor && correspondeUsuario && dentroDoPeriodo) ? "" : "none";
+      });
+    }
+  </script>
+</body>
+
+</html>

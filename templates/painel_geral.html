@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Acionamento</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+  <div class="max-w-7xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="titulo-metricas">⚡ Painel Geral</h1>
+      </div>
+      {% if session['usuario']['setor'] == 'suporte' %}
+      <div class="flex justify-end mb-4">
+        <button onclick="document.getElementById('modalAcionar').classList.remove('hidden')"
+          class="bg-[#3b0a57] hover:bg-[#ff6f00] text-white font-semibold py-2 px-5 rounded-lg shadow transition-all">
+          🚨 Acionar Caixa
+        </button>
+      </div>
+      {% endif %}
+    </div>
+    <div id="modalAcionar" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-xl shadow-xl max-w-xl w-full p-6 relative overflow-y-auto max-h-[90vh]">
+        <button onclick="document.getElementById('modalAcionar').classList.add('hidden')"
+          class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl font-bold">&times;</button>
+
+        <h1 class="titulo-formulario">📤 Acionamento de Caixa</h1>
+        <form method="POST" action="/acionamentos">
+          <div class="flex gap-4 mb-4">
+            <div class="form-group w-1/2">
+              <label for="regiao">Região</label>
+              <input type="text" id="regiao" name="regiao" placeholder="Ex: 63" required>
+            </div>
+            <div class="form-group w-1/2">
+              <label for="setor">Área</label>
+              <select id="setor" name="setor" required>
+                <option value="">Selecione a Área</option>
+                <option value="Matriz">Matriz</option>
+                <option value="Sinos">Sinos</option>
+                <option value="Litoral">Litoral</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cto">CTO</label>
+            <input type="text" id="cto" name="cto" placeholder="Ex: P-X035" required>
+          </div>
+
+          <div class="form-group">
+            <label for="problema">Problema</label>
+            <input type="text" id="problema" name="problema" placeholder="Queda, Offline, etc." required>
+          </div>
+
+          <div class="form-group">
+            <label for="clientes">Clientes Afetados</label>
+            <input type="number" id="clientes" name="clientes" min="1" placeholder="Ex: 5" required>
+          </div>
+
+          <div class="form-group">
+            <label for="obs">Observações</label>
+            <textarea id="obs" name="obs" rows="4"
+              placeholder="Ex: validado na OLT, previsão de normalização..."></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn w-full mt-4">🚀 Acionar</button>
+        </form>
+      </div>
+    </div>
+    <!-- CABEÇALHO COM LOGO, TÍTULO E BOTÃO -->
+
+
+
+
+    <div class="mb-6">
+      <input type="text" id="searchInput" placeholder="Pesquisar por região, CTO ou problema..."
+        class="w-full p-3 border border-purple-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+        oninput="filtrarCartoes()">
+    </div>
+
+    {% if caixas %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- COLUNA MATRIZ -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xl font-semibold text-purple-600">
+            🐦 | Matriz <span id="contador-matriz" class="text-sm font-normal text-gray-500"></span>
+          </h2>
+
+          <button onclick="copiarRegiao('matriz', '🐦‍🔥 | Matriz')"
+            class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm flex items-center">
+            <i class="far fa-copy mr-1"></i>
+          </button>
+        </div>
+
+        <div id="coluna-matriz" class="space-y-4">
+          {% for caixa in caixas if caixa.get('setor') == 'Matriz' %}
+          <div
+            class="bg-white p-4 rounded-lg shadow caixa-item {% if caixa['status'] != 'em_andamento' %}hidden{% endif %}"
+            data-busca="{{ caixa['regiao']|lower }} {{ caixa['cto']|lower }} {{ caixa['problema']|lower }}">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold text-sm">REGIÃO: {{ caixa['regiao'] }}</p>
+                <h3 class="font-bold text-lg">CTO: {{ caixa['cto'] }}</h3>
+              </div>
+
+              {% set status = caixa['status'] %}
+              <div class="flex flex-col items-end ml-2">
+                <span class="px-2 py-1 text-xs rounded-full
+            {% if status == 'pendente' %}bg-red-100 text-red-800
+            {% elif status == 'resolvido' %}bg-green-100 text-green-800
+            {% elif status == 'em_andamento' %}bg-yellow-100 text-yellow-800
+            {% elif status == 'agendar_migracao' %}bg-blue-100 text-blue-800
+            {% elif status == 'agendar_sem_voltagem' %}bg-orange-100 text-orange-800
+            {% elif status == 'agendar_ajuste_de_drop' %}bg-purple-100 text-purple-800
+            {% else %}bg-gray-200 text-gray-800{% endif %}">
+                  {{ status.replace('_', ' ').title() }}
+                </span>
+                {% if caixa['validado_em_iso'] %}
+                <span class="contador" data-inicio="{{ caixa['validado_em_iso'] }}">Calculando tempo...</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mt-2">
+              <button onclick="toggleDetails(this)" class="text-purple-600 text-sm font-semibold flex items-center">
+                <span>Mostrar detalhes</span>
+                <i class="fas fa-chevron-down ml-1 text-xs rotate-icon"></i>
+              </button>
+
+              <div class="details hidden mt-2 border-t pt-2">
+                <p class="text-sm"><span class="font-semibold">PROBLEMA:</span> {{ caixa['problema'] }}</p>
+                <p class="text-sm mt-1"><span class="font-semibold">Nº de clientes:</span> {{ caixa['clientes'] }}</p>
+
+                {% if caixa['obs'] %}
+                <div class="text-sm mt-1"><span class="font-semibold">OBS:</span> {{ formatarObs(caixa['obs'])|safe }}
+                </div>
+                {% endif %}
+
+                {% if caixa['protocolo'] and 'Protocolo:' not in caixa['obs'] %}
+                <p class="text-sm mt-1">
+                  <span class="font-semibold">Protocolo:</span> {{ caixa['protocolo'] }},
+                  <span class="font-semibold">Previsão:</span> {{ caixa['previsao'] }}
+                </p>
+                {% endif %}
+
+                {% if caixa['acionado_por'] %}
+                <p class="text-xs text-gray-600 mt-2 italic">
+                  Acionado por {{ caixa['acionado_por'] }} às {{ caixa['criado_em_formatado'] }}
+                </p>
+                {% else %}
+                <p class="text-xs text-gray-500 mt-2">{{ caixa.get('acionado_em_formatado', '') }}</p>
+                {% endif %}
+
+                {% if caixa['validado_por'] %}
+                <p class="text-xs text-gray-600 mt-1 italic">
+                  Validado por {{ caixa['validado_por'] }} às {{ caixa['validado_em_formatado'] }}
+                </p>
+                {% endif %}
+
+                <div class="mt-2 flex justify-between items-center">
+                  <button onclick="copiarInformacoes(this)"
+                    class="bg-purple-100 text-purple-700 px-3 py-1 rounded text-sm flex items-center shadow">
+                    <i class="far fa-copy mr-1"></i> Copiar
+                  </button>
+
+                  {% if session['usuario']['funcao'] != 'auxiliar' and session['usuario']['setor'] != 'gerente' %}
+                  <button onclick="abrirFormularioResolver({{ caixa['id'] }}, '{{ caixa['status'] }}')"
+                    class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm flex items-center shadow border border-green-300 hover:bg-green-200">
+                    Resolver
+                  </button>
+                  {% endif %}
+                </div>
+
+
+
+
+                <div class="hidden copy-content">
+                  REGIÃO: {{ caixa['regiao'] }}
+                  CTO: {{ caixa['cto'] }}
+                  PROBLEMA: {{ caixa['problema'] }}
+                  Nº de clientes: {{ caixa['clientes'] }}
+                  {% if caixa['obs'] %}OBS: {{ formatarObs(caixa['obs'], true) }}{% endif %}
+                  {% if caixa['protocolo'] and 'Protocolo:' not in caixa['obs'] %}Protocolo: {{ caixa['protocolo'] }}{%
+                  endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+
+
+
+      <!-- COLUNA SINOS -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xl font-semibold text-purple-600">
+            🔔 | Sinos <span id="contador-sinos" class="text-sm font-normal text-gray-500"></span>
+          </h2>
+          <button onclick="copiarRegiao('sinos', '🔔 | Sinos')"
+            class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm flex items-center">
+            <i class="far fa-copy mr-1"></i>
+          </button>
+        </div>
+
+        <div id="coluna-sinos" class="space-y-4">
+          {% for caixa in caixas if caixa.get('setor') == 'Sinos' %}
+          <div
+            class="bg-white p-4 rounded-lg shadow caixa-item {% if caixa['status'] != 'em_andamento' %}hidden{% endif %}"
+            data-busca="{{ caixa['regiao']|lower }} {{ caixa['cto']|lower }} {{ caixa['problema']|lower }}">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold text-sm">REGIÃO: {{ caixa['regiao'] }}</p>
+                <h3 class="font-bold text-lg">CTO: {{ caixa['cto'] }}</h3>
+              </div>
+
+              {% set status = caixa['status'] %}
+              <div class="flex flex-col items-end ml-2">
+                <span class="px-2 py-1 text-xs rounded-full
+            {% if status == 'pendente' %}bg-red-100 text-red-800
+            {% elif status == 'resolvido' %}bg-green-100 text-green-800
+            {% elif status == 'em_andamento' %}bg-yellow-100 text-yellow-800
+            {% elif status == 'agendar_migracao' %}bg-blue-100 text-blue-800
+            {% elif status == 'agendar_sem_voltagem' %}bg-orange-100 text-orange-800
+            {% elif status == 'agendar_ajuste_de_drop' %}bg-orange-100 text-orange-800
+            {% else %}bg-gray-200 text-gray-800{% endif %}">
+                  {{ status.replace('_', ' ').title() }}
+                </span>
+                {% if caixa['validado_em_iso'] %}
+                <span class="contador" data-inicio="{{ caixa['validado_em_iso'] }}">Calculando tempo...</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mt-2">
+              <button onclick="toggleDetails(this)" class="text-purple-600 text-sm font-semibold flex items-center">
+                <span>Mostrar detalhes</span>
+                <i class="fas fa-chevron-down ml-1 text-xs rotate-icon"></i>
+              </button>
+
+              <div class="details hidden mt-2 border-t pt-2">
+                <p class="text-sm"><span class="font-semibold">PROBLEMA:</span> {{ caixa['problema'] }}</p>
+                <p class="text-sm mt-1"><span class="font-semibold">Nº de clientes:</span> {{ caixa['clientes'] }}</p>
+
+                {% if caixa['obs'] %}
+                <div class="text-sm mt-1"><span class="font-semibold">OBS:</span> {{ formatarObs(caixa['obs'])|safe }}
+                </div>
+                {% endif %}
+
+                {% if caixa['protocolo'] and 'Protocolo:' not in caixa['obs'] %}
+                <p class="text-sm mt-1">
+                  <span class="font-semibold">Protocolo:</span> {{ caixa['protocolo'] }},
+                  <span class="font-semibold">Previsão:</span> {{ caixa['previsao'] }}
+                </p>
+                {% endif %}
+
+                {% if caixa['acionado_por'] %}
+                <p class="text-xs text-gray-600 mt-2 italic">
+                  Acionado por {{ caixa['acionado_por'] }} às {{ caixa['criado_em_formatado'] }}
+                </p>
+                {% else %}
+                <p class="text-xs text-gray-500 mt-2">{{ caixa.get('acionado_em_formatado', '') }}</p>
+                {% endif %}
+
+                {% if caixa['validado_por'] %}
+                <p class="text-xs text-gray-600 mt-1 italic">
+                  Validado por {{ caixa['validado_por'] }} às {{ caixa['validado_em_formatado'] }}
+                </p>
+                {% endif %}
+
+                <div class="mt-2 flex justify-between items-center">
+                  <button onclick="copiarInformacoes(this)"
+                    class="bg-purple-100 text-purple-700 px-3 py-1 rounded text-sm flex items-center shadow">
+                    <i class="far fa-copy mr-1"></i> Copiar
+                  </button>
+
+                  {% if session['usuario']['funcao'] != 'auxiliar' and session['usuario']['setor'] != 'gerente' %}
+                  <button onclick="abrirFormularioResolver({{ caixa['id'] }}, '{{ caixa['status'] }}')"
+                    class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm flex items-center shadow border border-green-300 hover:bg-green-200">
+                    Resolver
+                  </button>
+                  {% endif %}
+                </div>
+
+
+
+
+                <div class="hidden copy-content">
+                  REGIÃO: {{ caixa['regiao'] }}
+                  CTO: {{ caixa['cto'] }}
+                  PROBLEMA: {{ caixa['problema'] }}
+                  Nº de clientes: {{ caixa['clientes'] }}
+                  {% if caixa['obs'] %}OBS: {{ formatarObs(caixa['obs'], true) }}{% endif %}
+                  {% if caixa['protocolo'] and 'Protocolo:' not in caixa['obs'] %}Protocolo: {{ caixa['protocolo'] }}{%
+                  endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+
+
+      <!-- COLUNA LITORAL -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xl font-semibold text-purple-600">
+            🏖️ | Litoral <span id="contador-litoral" class="text-sm font-normal text-gray-500"></span>
+          </h2>
+
+          <button onclick="copiarRegiao('litoral', '🏖️ | Litoral')"
+            class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-sm flex items-center">
+            <i class="far fa-copy mr-1"></i>
+          </button>
+        </div>
+
+        <div id="coluna-litoral" class="space-y-4">
+          {% for caixa in caixas if caixa.get('setor') == 'Litoral' %}
+          <div
+            class="bg-white p-4 rounded-lg shadow caixa-item {% if caixa['status'] != 'em_andamento' %}hidden{% endif %}"
+            data-busca="{{ caixa['regiao']|lower }} {{ caixa['cto']|lower }} {{ caixa['problema']|lower }}">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold text-sm">REGIÃO: {{ caixa['regiao'] }}</p>
+                <h3 class="font-bold text-lg">CTO: {{ caixa['cto'] }}</h3>
+              </div>
+
+              {% set status = caixa['status'] %}
+              <div class="flex flex-col items-end ml-2">
+                <span class="px-2 py-1 text-xs rounded-full
+            {% if status == 'pendente' %}bg-red-100 text-red-800
+            {% elif status == 'resolvido' %}bg-green-100 text-green-800
+            {% elif status == 'em_andamento' %}bg-yellow-100 text-yellow-800
+            {% elif status == 'agendar_migracao' %}bg-blue-100 text-blue-800
+            {% elif status == 'agendar_sem_voltagem' %}bg-orange-100 text-orange-800
+            {% elif status == 'agendar_ajuste_de_drop' %}bg-purple-100 text-purple-800
+            {% else %}bg-gray-200 text-gray-800{% endif %}">
+                  {{ status.replace('_', ' ').title() }}
+                </span>
+                {% if caixa['validado_em_iso'] %}
+                <span class="contador" data-inicio="{{ caixa['validado_em_iso'] }}">Calculando tempo...</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mt-2">
+              <button onclick="toggleDetails(this)" class="text-purple-600 text-sm font-semibold flex items-center">
+                <span>Mostrar detalhes</span>
+                <i class="fas fa-chevron-down ml-1 text-xs rotate-icon"></i>
+              </button>
+
+              <div class="details hidden mt-2 border-t pt-2">
+                <p class="text-sm"><span class="font-semibold">PROBLEMA:</span> {{ caixa['problema'] }}</p>
+                <p class="text-sm mt-1"><span class="font-semibold">Nº de clientes:</span> {{ caixa['clientes'] }}</p>
+
+                {% if caixa['obs'] %}
+                <div class="text-sm mt-1"><span class="font-semibold">OBS:</span> {{ formatarObs(caixa['obs'])|safe }}
+                </div>
+                {% endif %}
+
+                {% if caixa['protocolo'] and 'Protocolo:' not in caixa['obs'] %}
+                <p class="text-sm mt-1">
+                  <span class="font-semibold">Protocolo:</span> {{ caixa['protocolo'] }},
+                  <span class="font-semibold">Previsão:</span> {{ caixa['previsao'] }}
+                </p>
+                {% endif %}
+
+                {% if caixa['acionado_por'] %}
+                <p class="text-xs text-gray-600 mt-2 italic">
+                  Acionado por {{ caixa['acionado_por'] }} às {{ caixa['criado_em_formatado'] }}
+                </p>
+                {% else %}
+                <p class="text-xs text-gray-500 mt-2">{{ caixa.get('acionado_em_formatado', '') }}</p>
+                {% endif %}
+
+                {% if caixa['validado_por'] %}
+                <p class="text-xs text-gray-600 mt-1 italic">
+                  Validado por {{ caixa['validado_por'] }} às {{ caixa['validado_em_formatado'] }}
+                </p>
+                {% endif %}
+
+                <div class="mt-2 flex justify-between items-center">
+                  <button onclick="copiarInformacoes(this)"
+                    class="bg-purple-100 text-purple-700 px-3 py-1 rounded text-sm flex items-center shadow">
+                    <i class="far fa-copy mr-1"></i> Copiar
+                  </button>
+
+                  {% if session['usuario']['funcao'] != 'auxiliar' and session['usuario']['setor'] != 'gerente' %}
+                  <button onclick="abrirFormularioResolver({{ caixa['id'] }}, '{{ caixa['status'] }}')"
+                    class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm flex items-center shadow border border-green-300 hover:bg-green-200">
+                    Resolver
+                  </button>
+                  {% endif %}
+                </div>
+
+
+
+
+                <div class="hidden copy-content">
+                  REGIÃO: {{ caixa['regiao'] }}
+                  CTO: {{ caixa['cto'] }}
+                  PROBLEMA: {{ caixa['problema'] }}
+                  Nº de clientes: {{ caixa['clientes'] }}
+                  {% if caixa['obs'] %}OBS: {{ formatarObs(caixa['obs'], true) }}{% endif %}
+                  {% if caixa['protocolo'] and 'Protocolo:' not in caixa['obs'] %}Protocolo: {{ caixa['protocolo'] }}{%
+                  endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+
+
+      {% else %}
+      <div class="bg-white p-6 rounded-lg shadow text-center">
+        <p class="text-gray-500">Nenhuma caixa foi acionada ainda.</p>
+        <p class="text-sm text-gray-400 mt-2">Os acionamentos aparecerão aqui automaticamente quando cadastrados</p>
+      </div>
+      {% endif %}
+    </div>
+    <div id="modalResolver" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 flex">
+      <form id="formResolver" enctype="multipart/form-data" onsubmit="enviarResolucao(event)"
+        class="bg-white rounded-xl p-6 shadow-xl w-full max-w-lg relative space-y-4">
+        <button type="button" onclick="fecharModalResolver()"
+          class="absolute top-2 right-4 text-gray-600 hover:text-red-600 text-2xl font-bold">&times;</button>
+
+        <h2 class="titulo-formulario">✅ Resolver Caixa</h2>
+        <input type="hidden" name="id_caixa" id="resolver_id_caixa">
+
+        <div class="form-group">
+          <label for="resolucao">O que foi feito?</label>
+          <textarea id="resolucao" name="resolucao" rows="4" required
+            placeholder="Ex: Substituição do drop, voltou online..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="resolvido_em">Data e hora da resolução</label>
+          <input type="datetime-local" id="resolvido_em" name="resolvido_em" required>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Atualizar status</label>
+          <select id="status" name="status" required class="w-full border p-2 rounded">
+            <option value="resolvido" selected>Resolvido</option>
+            <option value="em_andamento">Em Andamento</option>
+            <option value="pendente">Pendente</option>
+            <option value="agendar_migracao">Agendar Migração</option>
+            <option value="agendar_sem_voltagem">Agendar sem Voltagem</option>
+            <option value="agendar_ajuste_de_drop">Agendar Ajuste de Drop</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="foto_resolucao">Anexar foto (opcional)</label>
+          <input type="file" id="foto" name="foto" accept="image/*">
+
+        </div>
+
+        <button type="submit" class="submit-btn w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">
+          💾 Salvar Resolução
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <script>
+    function filtrarCartoes() {
+      const termo = document.getElementById('searchInput').value.trim().toLowerCase();
+      const caixas = document.querySelectorAll('.caixa-item');
+
+      caixas.forEach(caixa => {
+        const texto = caixa.getAttribute('data-busca');
+
+        if (termo === '') {
+          if (caixa.innerHTML.toLowerCase().includes('em andamento')) {
+            caixa.classList.remove('hidden');
+          } else {
+            caixa.classList.add('hidden');
+          }
+        } else {
+          if (texto.includes(termo)) {
+            caixa.classList.remove('hidden');
+          } else {
+            caixa.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+
+    function toggleDetails(button) {
+      const detailsDiv = button.nextElementSibling;
+      detailsDiv.classList.toggle('hidden');
+
+      const icon = button.querySelector('i');
+      const label = button.querySelector('span');
+
+      if (detailsDiv.classList.contains('hidden')) {
+        label.textContent = 'Mostrar detalhes';
+        icon.classList.remove('rotated');
+      } else {
+        label.textContent = 'Ocultar detalhes';
+        icon.classList.add('rotated');
+      }
+    }
+
+    async function copiarInformacoes(button) {
+      try {
+        const copyContent = button.closest('.caixa-item').querySelector('.copy-content').textContent
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .join('\n');
+
+        const textarea = document.createElement('textarea');
+        textarea.value = copyContent;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        let copiadoComSucesso = false;
+
+        if (navigator.clipboard) {
+          try {
+            await navigator.clipboard.writeText(copyContent);
+            copiadoComSucesso = true;
+          } catch (err) {
+            console.log('API Clipboard moderna falhou, tentando método antigo', err);
+          }
+        }
+
+        if (!copiadoComSucesso) {
+          try {
+            copiadoComSucesso = document.execCommand('copy');
+          } catch (err) {
+            console.error('Método execCommand também falhou:', err);
+          }
+        }
+
+        // Feedback visual (mantido)
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check mr-1"></i> ' + (copiadoComSucesso ? 'Copiado!' : 'Falha ao copiar');
+        button.classList.remove('bg-purple-100', 'text-purple-700');
+
+        if (copiadoComSucesso) {
+          button.classList.add('bg-green-100', 'text-green-700');
+        } else {
+          button.classList.add('bg-red-100', 'text-red-700');
+        }
+
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+          button.classList.add('bg-purple-100', 'text-purple-700');
+        }, 2000);
+
+        document.body.removeChild(textarea);
+      } catch (error) {
+        console.error('Erro ao copiar:', error);
+        // alerta removido, como pedido
+      }
+    }
+
+    function copiarRegiao(colunaId, titulo) {
+      const coluna = document.getElementById(`coluna-${colunaId}`);
+      const caixas = coluna.querySelectorAll('div.caixa-item');
+
+      let texto = `${titulo}:\n`;
+
+      caixas.forEach(caixa => {
+        const statusSpan = caixa.querySelector('span');
+        const cto = caixa.querySelector('h3')?.textContent?.trim();
+        const tempo = caixa.querySelector('.contador')?.textContent?.trim();
+
+        if (statusSpan && statusSpan.textContent.toLowerCase().includes('em andamento')) {
+          if (cto && tempo) {
+            texto += `🔴 ${cto} - Alarmada a ${tempo.replace('🕒 ', '')}\n`;
+          } else if (cto) {
+            texto += `🔴 ${cto}\n`;
+          }
+        }
+      });
+
+      const textarea = document.createElement('textarea');
+      textarea.value = texto.trim();
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      alert(`Caixas da região ${colunaId.charAt(0).toUpperCase() + colunaId.slice(1)} copiadas com sucesso!`);
+    }
+
+    function atualizarContadores() {
+      document.querySelectorAll('.contador').forEach(el => {
+        const inicioStr = el.getAttribute('data-inicio');
+        if (!inicioStr) return;
+
+        const inicio = new Date(inicioStr);
+        const agora = new Date();
+
+        if (isNaN(inicio)) {
+          el.textContent = 'Data inválida';
+          return;
+        }
+
+        const diff = agora - inicio;
+        const horas = Math.floor(diff / 3600000);
+        const minutos = Math.floor((diff % 3600000) / 60000);
+
+        el.textContent = `${horas}h ${minutos}min`;
+      });
+    }
+
+    atualizarContadores();
+    atualizarTotaisClientes();
+    setInterval(atualizarContadores, 60000); // a cada 1 minuto
+    const eventSource = new EventSource("/atividades-stream");
+
+    eventSource.onmessage = function (event) {
+      if (event.data.includes("atualizar")) {
+        location.reload();
+      }
+    };
+    function abrirFormularioResolver(id, statusAtual) {
+      document.getElementById('resolver_id_caixa').value = id;
+      const selectStatus = document.getElementById('status');
+
+      // Limpa seleção anterior
+      [...selectStatus.options].forEach(option => {
+        option.selected = option.value === statusAtual;
+      });
+
+      document.getElementById('modalResolver').classList.remove('hidden');
+    }
+
+
+    function fecharModalResolver() {
+      document.getElementById('modalResolver').classList.add('hidden');
+    }
+
+    function enviarResolucao(event) {
+      event.preventDefault();
+      const form = document.getElementById('formResolver');
+      const formData = new FormData(form);
+
+      fetch('/resolver_caixa', {
+        method: 'POST',
+        body: formData
+      }).then(res => res.json()).then(data => {
+        if (data.status === 'ok') {
+          alert('✅ Caixa resolvida com sucesso!');
+          location.reload();
+        } else {
+          alert('❌ Erro: ' + data.mensagem);
+        }
+      });
+    }
+    document.addEventListener('paste', function (event) {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let item of items) {
+        if (item.kind === 'file') {
+          const blob = item.getAsFile();
+          const fileInput = document.getElementById('foto');
+          const dt = new DataTransfer();
+          dt.items.add(blob);
+          fileInput.files = dt.files;
+          break;
+        }
+      }
+    });
+    function atualizarTotaisClientes() {
+      const regioes = ['sinos', 'matriz', 'litoral'];
+
+      regioes.forEach(regiao => {
+        const coluna = document.getElementById(`coluna-${regiao}`);
+        const caixas = coluna.querySelectorAll('.caixa-item');
+        let totalClientes = 0;
+
+        caixas.forEach(caixa => {
+          const status = caixa.querySelector('span')?.textContent?.toLowerCase();
+          if (status.includes('em andamento')) {
+            const texto = caixa.innerHTML;
+            const match = texto.match(/Nº de clientes:\s*(\d+)/i);
+            if (match) {
+              totalClientes += parseInt(match[1]);
+            }
+          }
+        });
+
+        const contador = document.getElementById(`contador-${regiao}`);
+        if (contador) {
+          contador.textContent = `(${totalClientes} cliente${totalClientes !== 1 ? 's' : ''})`;
+        }
+      });
+    }
+    const sse = new EventSource("/eventos-refresh");
+    sse.onmessage = function (event) {
+      console.log("🔁 Evento SSE recebido:", event.data); // Apenas para teste
+      if (event.data === "refresh") {
+        location.reload();
+      }
+    };
+  </script>
+
+
+
+  <style>
+    .contador {
+      font-size: 0.75rem;
+      /* text-xs */
+      color: #6b7280;
+      /* text-gray-600 */
+      margin-top: 0.25rem;
+      display: block;
+      white-space: nowrap;
+    }
+
+    .contador::before {
+      content: "🕒 ";
+    }
+
+    .bg-gray-500 {
+      background-color: #ff6f00 !important;
+    }
+
+    .bg-gray-500:hover {
+      background-color: #6a1b9a !important;
+    }
+
+    .titulo-metricas {
+      font-size: 26px;
+      font-weight: bold;
+      color: #7b2cbf;
+      background: #f3e5f5;
+      padding: 8px 16px;
+      border-left: 5px solid #7b2cbf;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px #00000010;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rotate-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .rotate-icon.rotated {
+      transform: rotate(180deg);
+    }
+
+    .titulo-formulario {
+      font-size: 26px;
+      font-weight: bold;
+      color: #7b2cbf;
+      background: #f3e5f5;
+      padding: 10px 20px;
+      border-left: 5px solid #7b2cbf;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #5a189a;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      transition: border-color 0.2s ease;
+      width: 100%;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #7b2cbf;
+    }
+
+    .submit-btn {
+      background-color: #7b2cbf;
+      color: white;
+      font-weight: 600;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background-color: #5a189a;
+    }
+
+    .botoes-acoes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .botao-copiar,
+    .botao-resolver {
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .botao-copiar {
+      background-color: #ede9fe;
+      color: #6b21a8;
+      border: 1px solid #ddd;
+    }
+
+    .botao-copiar:hover {
+      background-color: #ddd6fe;
+    }
+
+    .botao-resolver {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #d1d5db;
+    }
+
+    .botao-resolver:hover {
+      background-color: #a7f3d0;
+    }
+  </style>
+
+</body>
+
+</html>

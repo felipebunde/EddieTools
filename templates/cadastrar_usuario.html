@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}" type="image/png">
+  <meta charset="UTF-8">
+  <title>Cadastro de Usuário</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+  <div class="max-w-xl mx-auto p-6 mt-10 bg-white rounded shadow">
+    <h1 class="text-2xl font-bold text-purple-700 mb-6">👤 Cadastrar Novo Usuário</h1>
+
+    <form action="/cadastrar_usuario" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Nome:</label>
+        <input type="text" name="nome" required class="w-full border p-2 rounded">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Senha:</label>
+        <input type="password" name="senha" required class="w-full border p-2 rounded">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Setor:</label>
+        <select name="setor" id="setor" required class="w-full border p-2 rounded" onchange="atualizarFuncoes()">
+          <option value="suporte">Suporte</option>
+          <option value="infra">Infra</option>
+          <option value="sac">SAC</option>
+          <option value="cobranca">Cobrança</option>
+          <option value="qualidade">Qualidade</option>
+          <option value="retencao">Retenção</option>
+        </select>
+      </div>
+
+      <div id="campoFuncao">
+        <label class="block text-sm font-medium">Função:</label>
+        <select name="funcao" id="funcao" class="w-full border p-2 rounded">
+          <!-- Opções populadas via JS -->
+        </select>
+      </div>
+
+      <div class="text-center mt-6">
+        <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
+          💾 Salvar Usuário
+        </button>
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="/usuarios" class="text-blue-600 hover:underline text-sm">
+          🛠️ Editar Usuários Existentes
+        </a>
+        <br>
+      
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function atualizarFuncoes() {
+      const setor = document.getElementById('setor').value;
+      const funcaoSelect = document.getElementById('funcao');
+      const campoFuncao = document.getElementById('campoFuncao');
+
+      funcaoSelect.innerHTML = ""; // Limpa opções anteriores
+
+      if (setor === "suporte") {
+        campoFuncao.style.display = "block";
+        ["Auxiliar", "N1", "N2", "Admin"].forEach(funcao => {
+          const option = new Option(funcao, funcao);
+          funcaoSelect.appendChild(option);
+        });
+      } else if (setor === "infra") {
+        campoFuncao.style.display = "block";
+        ["sinos", "matriz", "litoral"].forEach(funcao => {
+          const option = new Option(funcao, funcao);
+          funcaoSelect.appendChild(option);
+        });
+      } else {
+        campoFuncao.style.display = "none";
+      }
+    }
+
+    window.onload = atualizarFuncoes;
+  </script>
+</body>
+
+</html>
