@@ -1499,7 +1499,6 @@ def metricas():
 @app.route('/cadastrar_usuario', methods=['GET', 'POST'])
 @requer_permissao(['admin', 'dev', 'supervisor', 'n2'])
 def cadastrar_usuario():
-    import uuid
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
         senha = request.form.get('senha', '').strip()
@@ -1518,14 +1517,12 @@ def cadastrar_usuario():
             flash('Função é obrigatória para o setor Suporte.', 'error')
             return redirect('/cadastrar_usuario')
 
-        usuario_id = f"{nome.lower().replace(' ','_')}_{uuid.uuid4().hex[:6]}"
-
         conn = sqlite3.connect('acionamentos.db')
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO usuarios (id, nome, senha, setor, funcao, status, foto, bio)
-            VALUES (?, ?, ?, ?, ?, 'Online', 'icon.png', '')
-        """, (usuario_id, nome, senha, setor, funcao))
+            INSERT INTO usuarios (nome, senha, setor, funcao, status, foto, bio)
+            VALUES (?, ?, ?, ?, 'Online', 'icon.png', '')
+        """, (nome, senha, setor, funcao))  # ← Corrigido: 4 placeholders para 4 valores
         conn.commit()
         conn.close()
 
@@ -1608,6 +1605,61 @@ def editar_usuario(id):
     # --- Se for apenas exibir o formulário ---
     conn.close()
     return render_template('editar_usuario.html', usuario=usuario)
+
+@app.route('/deletar_usuario/<int:id>', methods=['DELETE'])
+@requer_permissao(['admin', 'dev', 'supervisor'])
+def deletar_usuario(id):
+    try:
+        # Impede que o usuário exclua a si mesmo
+        usuario_logado = session.get('usuario', {})
+        usuario_id_logado = usuario_logado.get('id')
+        
+        if usuario_id_logado == id:
+            return jsonify({"erro": "Você não pode excluir seu próprio usuário!"}), 403
+        
+        conn = sqlite3.connect('acionamentos.db')
+        cursor = conn.cursor()
+        
+        # Verifica se o usuário existe
+        cursor.execute("SELECT nome, funcao FROM usuarios WHERE id = ?", (id,))
+        usuario = cursor.fetchone()
+        
+        if not usuario:
+            conn.close()
+            return jsonify({"erro": "Usuário não encontrado!"}), 404
+        
+        nome_usuario = usuario[0]
+        funcao_usuario = usuario[1]
+        
+        # Protege o admin principal (opcional, mas recomendado)
+        if nome_usuario.lower() == 'admin' or funcao_usuario == 'dev':
+            conn.close()
+            return jsonify({"erro": "Não é permitido excluir usuários administradores principais!"}), 403
+        
+        # Verifica se o usuário tem registros vinculados em caixas
+        cursor.execute("""
+            SELECT COUNT(*) FROM caixas 
+            WHERE acionado_por = ? OR validado_por = ? OR resolvido_por = ?
+        """, (nome_usuario, nome_usuario, nome_usuario))
+        
+        count = cursor.fetchone()[0]
+        
+        if count > 0:
+            conn.close()
+            return jsonify({
+                "erro": f"Usuário possui {count} registro(s) vinculado(s) no sistema! Exclua ou reassine os registros primeiro."
+            }), 400
+        
+        # Exclui o usuário
+        cursor.execute("DELETE FROM usuarios WHERE id = ?", (id,))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({"mensagem": f"Usuário '{nome_usuario}' excluído com sucesso!"}), 200
+        
+    except Exception as e:
+        print(f"[ERRO] Falha ao excluir usuário {id}: {e}")
+        return jsonify({"erro": f"Erro ao excluir usuário: {str(e)}"}), 500
 
 
 # ---------- PERFIL (MEU PERFIL) ----------
