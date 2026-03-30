@@ -1,3 +1,27 @@
+# Python - Arquivos de cache e compilados
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+
+# Ambientes Virtuais (se você usar venv ou virtualenv)
+venv/
+env/
+ENV/
+
+# Banco de Dados (Protege seus dados de produção)
 *.db
+*.sqlite
+*.sqlite3
+
+# Logs e arquivos temporários
+*.log
+.DS_Store
+Thumbs.db
+
+# IDEs (VS Code, PyCharm, etc)
+.vscode/
+.idea/
+
+# Uploads de usuários (caso salve arquivos na static/uploads)
+static/uploads/*
+!static/uploads/.gitkeep
